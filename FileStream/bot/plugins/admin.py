@@ -1,11 +1,11 @@
+import os
+import time
 import string
 import random
-import time
-import datetime
-import aiofiles
 import asyncio
-import os
-from pyrogram import Client, filters
+import aiofiles
+import datetime
+
 from FileStream.utils.broadcast_helper import send_msg
 from FileStream.utils.database import Database
 from FileStream.bot import FileStream
@@ -68,30 +68,30 @@ async def sts(b, m: Message):
         await m.reply_text(text=f"`{id}`** is not Banned** ", parse_mode=ParseMode.MARKDOWN, quote=True)
 
 
-@Client.on_message(filters.command("broadcast") & filters.private & filters.user(Telegram.OWNER_ID) & filters.reply)
+@FileStream.on_message(filters.command("broadcast") & filters.private & filters.user(Telegram.OWNER_ID) & filters.reply)
 async def broadcast_(c, m):
     all_users = await db.get_all_users()
-    broadcast_msg = m.reply_to_message
-    while True:
-        broadcast_id = ''.join([random.choice(string.ascii_letters) for i in range(3)])
-        if not broadcast_ids.get(broadcast_id):
-            break
+    broadcast_msg: Message = m.reply_to_message
+    broadcast_id = ''.join([random.choice(string.ascii_letters) for _ in range(3)])
+    while broadcast_ids.get(broadcast_id):
+        broadcast_id = ''.join([random.choice(string.ascii_letters) for _ in range(3)])
+    
     out = await m.reply_text(
-        text=f"Broadcast initiated! You will be notified with log file when all the users are notified."
+        text="Broadcast initiated! You will be notified with log file when all the users are notified."
     )
     start_time = time.time()
     total_users = await db.total_users_count()
     done = 0
     failed = 0
     success = 0
-    broadcast_ids[broadcast_id] = dict(
-        total=total_users,
-        current=done,
-        failed=failed,
-        success=success
-    )
-    async with aiofiles.open('broadcast.txt', 'w') as broadcast_log_file:
-        async for user in all_users:
+    broadcast_ids[broadcast_id] = {
+        'total': total_users,
+        'current': done,
+        'failed': failed,
+        'success': success
+    }
+    async with aiofiles.open('broadcast.txt', 'a') as broadcast_log_file:
+        for user in all_users:
             sts, msg = await send_msg(
                 user_id=int(user['id']),
                 message=broadcast_msg
@@ -105,20 +105,18 @@ async def broadcast_(c, m):
             if sts == 400:
                 await db.delete_user(user['id'])
             done += 1
-            if broadcast_ids.get(broadcast_id) is None:
+            if not broadcast_ids.get(broadcast_id):
                 break
             else:
-                broadcast_ids[broadcast_id].update(
-                    dict(
-                        current=done,
-                        failed=failed,
-                        success=success
-                    )
-                )
+                broadcast_ids[broadcast_id].update({
+                    'current': done,
+                    'failed': failed,
+                    'success': success
+                })
                 try:
                     await out.edit_text(f"Broadcast Status\n\ncurrent: {done}\nfailed:{failed}\nsuccess: {success}")
-                except:
-                    pass
+                except Exception as e:
+                    print(f"Error while editing message: {e}")
     if broadcast_ids.get(broadcast_id):
         broadcast_ids.pop(broadcast_id)
     completed_in = datetime.timedelta(seconds=int(time.time() - start_time))
@@ -136,6 +134,7 @@ async def broadcast_(c, m):
             quote=True
         )
     os.remove('broadcast.txt')
+
 
 @FileStream.on_message(filters.command("del") & filters.private & filters.user(Telegram.OWNER_ID))
 async def sts(c: Client, m: Message):
