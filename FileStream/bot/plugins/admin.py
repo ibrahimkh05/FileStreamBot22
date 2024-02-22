@@ -1,10 +1,14 @@
-import os
-import time
 import string
 import random
-import asyncio
-import aiofiles
+import time
 import datetime
+import aiofiles
+import asyncio
+import os
+from pyrogram import Client, filters
+
+from database.users_chats_db import db
+from utils import send_msg
 
 from FileStream.utils.broadcast_helper import send_msg
 from FileStream.utils.database import Database
@@ -68,7 +72,7 @@ async def sts(b, m: Message):
         await m.reply_text(text=f"`{id}`** is not Banned** ", parse_mode=ParseMode.MARKDOWN, quote=True)
 
 
-@FileStream.on_message(filters.command("broadcast") & filters.private & filters.user(Telegram.OWNER_ID) & filters.reply)
+@Client.on_message(filters.command("broadcast") & filters.private & filters.user(Telegram.OWNER_ID) & filters.reply)
 async def broadcast_(c, m):
     all_users = await db.get_all_users()
     broadcast_msg = m.reply_to_message
@@ -136,7 +140,6 @@ async def broadcast_(c, m):
             quote=True
         )
     os.remove('broadcast.txt')
-
 
 @FileStream.on_message(filters.command("del") & filters.private & filters.user(Telegram.OWNER_ID))
 async def sts(c: Client, m: Message):
