@@ -6,10 +6,6 @@ import aiofiles
 import asyncio
 import os
 from pyrogram import Client, filters
-
-from database.users_chats_db import db
-from utils import send_msg
-
 from FileStream.utils.broadcast_helper import send_msg
 from FileStream.utils.database import Database
 from FileStream.bot import FileStream
