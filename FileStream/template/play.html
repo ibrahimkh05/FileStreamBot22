@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FileStreamBot | {{file_name}}</title>
     <link rel="icon" href="https://i.ibb.co/Hh4kF2b/icon.png" type="image/x-icon">
-    <link rel="stylesheet" href="https://cdn.theoplayer.com/latest/theoplayer.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/plyr@3.6.9/dist/plyr.css">
     <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@500;700&display=swap" rel="stylesheet">
 </head>
 
@@ -16,8 +16,9 @@
     </div>
 
     <div style="max-width: 100%; text-align: center; margin-top: 20px;">
-        <!-- THEOplayer Video Player -->
-        <div id="theoplayer" style="width: 100%; max-width: 100%; margin: 0 auto;"></div>
+        <video id="player" class="plyr" controls>
+            <source src="https://faststreaming.cybersyncc.workers.dev/?src={{file_url}}" type="video/mp4">
+        </video>
     </div>
 
     <div style="text-align: center; margin-top: 10px;">
@@ -25,36 +26,19 @@
         <button onclick="copyStreamLink()">Copy Stream Link</button>
     </div>
 
-    <script src="https://cdn.theoplayer.com/latest/theoplayer.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/plyr@3.6.9/dist/plyr.min.js"></script>
     <script>
-        // Replace placeholders with actual values
-        const fileUrl = "https://faststreaming.cybersyncc.workers.dev/?src={{file_url}}"; // Replace with actual video URL
-        const fileName = "{{file_name}}"; // Replace with actual file name
-        const fileSize = "{{file_size}}"; // Replace with actual file size
-
-        document.querySelector("h2").innerText = "Now Playing: " + fileName;
-        document.querySelector("h4").innerText = "File Size: " + fileSize;
-
-        // Initialize THEOplayer
-        const player = new THEOplayer.Player('theoplayer', {
-            libraryLocation: 'https://cdn.theoplayer.com/latest/',
-            autoplay: true,
-            controls: true,
-            width: '100%',
-            height: 'auto',
+        const player = new Plyr('#player', {
+            controls: [
+                'play', 'progress', 'current-time', 'mute', 'volume', 'fullscreen', 'settings'
+            ],
+            settings: ['quality', 'speed', 'loop']
         });
-
-        // Setup the video source
-        player.source = {
-            sources: [{
-                src: fileUrl,
-                type: "video/mp4"
-            }]
-        };
 
         // Function to copy stream link
         function copyStreamLink() {
-            navigator.clipboard.writeText(fileUrl).then(() => {
+            const link = "https://faststreaming.cybersyncc.workers.dev/?src={{file_url}}";
+            navigator.clipboard.writeText(link).then(() => {
                 alert("Stream link copied!");
             }).catch(err => {
                 alert("Failed to copy link: " + err);
