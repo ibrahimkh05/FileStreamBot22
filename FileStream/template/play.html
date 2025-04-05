@@ -6,99 +6,57 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FileStreamBot | {{file_name}}</title>
     <link rel="icon" href="https://i.ibb.co/Hh4kF2b/icon.png" type="image/x-icon">
-    <style>
-        body {
-            font-family: 'Arial', sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #101010;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            color: #fff;
-        }
-
-        h2 {
-            color: #fff;
-            font-size: 24px;
-            margin: 10px 0;
-        }
-
-        #jwplayer-container {
-            width: 100%;
-            max-width: 900px;
-            background-color: #000;
-            border-radius: 10px;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.7);
-        }
-
-        .footer {
-            text-align: center;
-            margin-top: 15px;
-            font-size: 14px;
-        }
-
-        button {
-            padding: 10px 20px;
-            background-color: #ff9900;
-            border: none;
-            border-radius: 5px;
-            font-size: 16px;
-            color: white;
-            cursor: pointer;
-            margin: 10px 0;
-        }
-
-        button:hover {
-            background-color: #e68a00;
-        }
-
-        .copy-link-message {
-            font-size: 14px;
-            color: #ff9900;
-            margin-top: 10px;
-        }
-
-    </style>
+    
+    <!-- Include THEOplayer CSS -->
+    <link rel="stylesheet" href="https://cdn.theoplayer.com/latest/theoplayer.css" />
 </head>
 
 <body>
-
-    <div>
+    <div style="text-align: center; margin-top: 20px;">
         <h2>Now Playing: {{file_name}}</h2>
-        <div id="jwplayer-container"></div>
-        <div class="footer">
-            <h4>File Size: {{file_size}}</h4>
-            <button onclick="copyStreamLink()">Copy Stream Link</button>
-            <p class="copy-link-message" id="copyMessage"></p>
-        </div>
     </div>
 
-    <!-- JW Player Script -->
-    <script type="text/javascript" src="https://cdn.jwplayer.com/libraries/your-library-id.js"></script>
-    <script type="text/javascript">
-        var player = jwplayer("jwplayer-container").setup({
-            file: "https://faststreaming.cybersyncc.workers.dev/?src={{file_url}}", // Your video source URL
-            width: "100%",
-            aspectratio: "16:9",
-            controls: true, // Default controls are enabled here
+    <div style="max-width: 100%; text-align: center; margin-top: 20px;">
+        <!-- THEOplayer Video Player -->
+        <div id="theoplayer" style="width: 100%; max-width: 100%; margin: 0 auto;"></div>
+    </div>
+
+    <div style="text-align: center; margin-top: 10px;">
+        <h4>File Size: {{file_size}}</h4>
+        <button onclick="copyStreamLink()">Copy Stream Link</button>
+    </div>
+
+    <!-- Include THEOplayer JS -->
+    <script src="https://cdn.theoplayer.com/latest/theoplayer.js"></script>
+
+    <script>
+        // Initialize THEOplayer
+        const player = new THEOplayer.Player('theoplayer', {
+            libraryLocation: 'https://cdn.theoplayer.com/latest/',
             autoplay: true,
-            fullscreen: true,
-            stretching: "uniform"
+            controls: true,
+            width: '100%',
+            height: 'auto',
         });
+
+        // Setup the video source
+        player.source = {
+            sources: [{
+                src: "https://faststreaming.cybersyncc.workers.dev/?src={{file_url}}",
+                type: "video/mp4"
+            }]
+        };
 
         // Function to copy stream link
         function copyStreamLink() {
             const link = "https://faststreaming.cybersyncc.workers.dev/?src={{file_url}}";
             navigator.clipboard.writeText(link).then(() => {
-                document.getElementById("copyMessage").innerText = "Stream link copied!";
+                alert("Stream link copied!");
             }).catch(err => {
-                document.getElementById("copyMessage").innerText = "Failed to copy link: " + err;
+                alert("Failed to copy link: " + err);
             });
         }
     </script>
-
 </body>
 
 </html>
