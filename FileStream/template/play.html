@@ -2,87 +2,49 @@
 <html lang="en">
 
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>FileStreamBot</title>
-  <link rel="icon" href="https://i.ibb.co/Hh4kF2b/icon.png" type="image/x-icon" />
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/plyr@3.6.9/dist/plyr.css" />
-  <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@500;700&display=swap" rel="stylesheet" />
-  <style>
-    body {
-      font-family: 'Josefin Sans', sans-serif;
-      background-color: #111;
-      color: #fff;
-      text-align: center;
-      padding: 20px;
-    }
-
-    video {
-      width: 90%;
-      max-width: 960px;
-      margin-top: 20px;
-      border-radius: 12px;
-      box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
-    }
-
-    button {
-      margin-top: 10px;
-      padding: 10px 20px;
-      background-color: #ff6600;
-      border: none;
-      color: white;
-      font-weight: bold;
-      cursor: pointer;
-      border-radius: 8px;
-    }
-
-    button:hover {
-      background-color: #e65c00;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FileStreamBot | {{file_name}}</title>
+    <link rel="icon" href="https://i.ibb.co/Hh4kF2b/icon.png" type="image/x-icon">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/plyr@3.6.9/dist/plyr.css">
+    <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@500;700&display=swap" rel="stylesheet">
 </head>
 
 <body>
-  <h2 id="title">Now Playing</h2>
-  <video id="player" class="plyr" controls>
-    <source id="videoSource" src="" type="video/mp4" />
-    Your browser does not support the video tag.
-  </video>
-  <h4 id="size"></h4>
-  <button onclick="copyStreamLink()">Copy Stream Link</button>
+    <div style="text-align: center; margin-top: 20px;">
+        <h2>Now Playing: {{file_name}}</h2>
+    </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/plyr@3.6.9/dist/plyr.min.js"></script>
-  <script>
-    // Extract query parameters from URL
-    function getParam(name) {
-      const url = new URL(window.location.href);
-      return url.searchParams.get(name);
-    }
+    <div style="max-width: 100%; text-align: center; margin-top: 20px;">
+        <video id="player" class="plyr" controls>
+            <source src="https://faststreaming.cybersyncc.workers.dev/?src={{file_url}}" type="video/mp4">
+        </video>
+    </div>
 
-    const fileUrl = getParam("url");
-    const fileName = getParam("name") || "Untitled";
-    const fileSize = getParam("size") || "Unknown size";
+    <div style="text-align: center; margin-top: 10px;">
+        <h4>File Size: {{file_size}}</h4>
+        <button onclick="copyStreamLink()">Copy Stream Link</button>
+    </div>
 
-    document.getElementById("title").innerText = `Now Playing: ${fileName}`;
-    document.getElementById("size").innerText = `File Size: ${fileSize}`;
+    <script src="https://cdn.jsdelivr.net/npm/plyr@3.6.9/dist/plyr.min.js"></script>
+    <script>
+        const player = new Plyr('#player', {
+            controls: [
+                'play', 'progress', 'current-time', 'mute', 'volume', 'fullscreen', 'settings'
+            ],
+            settings: ['quality', 'speed', 'loop']
+        });
 
-    const videoSrc = `https://faststreaming.cybersyncc.workers.dev/?src=${encodeURIComponent(fileUrl)}`;
-    document.getElementById("videoSource").src = videoSrc;
-    document.getElementById("player").load();
-
-    const player = new Plyr('#player', {
-      controls: ['play', 'progress', 'current-time', 'mute', 'volume', 'fullscreen', 'settings'],
-      settings: ['quality', 'speed', 'loop']
-    });
-
-    function copyStreamLink() {
-      navigator.clipboard.writeText(videoSrc).then(() => {
-        alert("Stream link copied!");
-      }).catch(err => {
-        alert("Failed to copy link: " + err);
-      });
-    }
-  </script>
+        // Function to copy stream link
+        function copyStreamLink() {
+            const link = "https://faststreaming.cybersyncc.workers.dev/?src={{file_url}}";
+            navigator.clipboard.writeText(link).then(() => {
+                alert("Stream link copied!");
+            }).catch(err => {
+                alert("Failed to copy link: " + err);
+            });
+        }
+    </script>
 </body>
 
 </html>
