@@ -6,9 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FileStreamBot | {{file_name}}</title>
     <link rel="icon" href="https://i.ibb.co/Hh4kF2b/icon.png" type="image/x-icon">
-    
-    <!-- Include THEOplayer CSS -->
     <link rel="stylesheet" href="https://cdn.theoplayer.com/latest/theoplayer.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@500;700&display=swap" rel="stylesheet">
 </head>
 
 <body>
@@ -26,10 +25,16 @@
         <button onclick="copyStreamLink()">Copy Stream Link</button>
     </div>
 
-    <!-- Include THEOplayer JS -->
     <script src="https://cdn.theoplayer.com/latest/theoplayer.js"></script>
-
     <script>
+        // Replace placeholders with actual values
+        const fileUrl = "https://faststreaming.cybersyncc.workers.dev/?src={{file_url}}"; // Replace with actual video URL
+        const fileName = "{{file_name}}"; // Replace with actual file name
+        const fileSize = "{{file_size}}"; // Replace with actual file size
+
+        document.querySelector("h2").innerText = "Now Playing: " + fileName;
+        document.querySelector("h4").innerText = "File Size: " + fileSize;
+
         // Initialize THEOplayer
         const player = new THEOplayer.Player('theoplayer', {
             libraryLocation: 'https://cdn.theoplayer.com/latest/',
@@ -42,15 +47,14 @@
         // Setup the video source
         player.source = {
             sources: [{
-                src: "https://faststreaming.cybersyncc.workers.dev/?src={{file_url}}",
+                src: fileUrl,
                 type: "video/mp4"
             }]
         };
 
         // Function to copy stream link
         function copyStreamLink() {
-            const link = "https://faststreaming.cybersyncc.workers.dev/?src={{file_url}}";
-            navigator.clipboard.writeText(link).then(() => {
+            navigator.clipboard.writeText(fileUrl).then(() => {
                 alert("Stream link copied!");
             }).catch(err => {
                 alert("Failed to copy link: " + err);
