@@ -1,65 +1,710 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Premium Video Player | {{file_name}}</title>
-    <!-- Link to remote CSS file from GitHub Gist -->
-    <link rel="stylesheet" href="https://gist.githubusercontent.com/luciferworld/8766b24cde64caa1b4f3ba13f6d69ccc/raw/7000a955e272793576542175e94fd3bc8c7e52cb/styles.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>{{file_name}}</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --primary-color: #e50914;
+      --secondary-color: #f5f5f5;
+      --bg-dark: #141414;
+      --bg-light: #1f1f1f;
+      --text-primary: #ffffff;
+      --text-secondary: #d2d2d2;
+      --hover-bg: rgba(255, 255, 255, 0.1);
+      --progress-height: 4px;
+      --controls-height: 70px;
+      --transition-speed: 0.2s;
+    }
+    
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    body {
+      font-family: 'Roboto', sans-serif;
+      background: var(--bg-dark);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      color: var(--text-primary);
+    }
+    
+    .player {
+      position: relative;
+      width: 90%;
+      max-width: 960px;
+      border-radius: 8px;
+      overflow: hidden;
+      background: #000;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      aspect-ratio: 14/9; /* Changed to 14:9 aspect ratio */
+    }
+    
+    video {
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: cover;
+    }
+    
+    .title-bar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      padding: 15px;
+      background: linear-gradient(to bottom, rgba(0,0,0,0.7) 0%, transparent 100%);
+      z-index: 10;
+      display: none;
+    }
+    
+    .controls-container {
+      position: absolute;
+      bottom: 0;
+      width: 100%;
+      z-index: 10;
+      background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 100%);
+      transition: all var(--transition-speed) ease;
+    }
+    
+    .controls-container.hidden {
+      transform: translateY(100%);
+      opacity: 0;
+    }
+    
+    .progress-container {
+      width: 100%;
+      height: var(--progress-height);
+      background: rgba(255, 255, 255, 0.2);
+      cursor: pointer;
+      position: relative;
+    }
+    
+    .progress {
+      height: 100%;
+      background: var(--primary-color);
+      width: 0%;
+      position: relative;
+      transition: width 0.1s linear;
+    }
+    
+    .progress-handle {
+      position: absolute;
+      right: -8px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 16px;
+      height: 16px;
+      background: var(--primary-color);
+      border-radius: 50%;
+      opacity: 0;
+      transition: opacity var(--transition-speed);
+      box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+    }
+    
+    .progress-container:hover .progress-handle {
+      opacity: 1;
+    }
+    
+    .controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 15px;
+      height: var(--controls-height);
+    }
+    
+    .btn-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    button {
+      background: transparent;
+      border: none;
+      color: var(--text-primary);
+      font-size: 18px;
+      width: 40px;
+      height: 40px;
+      cursor: pointer;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transition: all var(--transition-speed) ease;
+      position: relative;
+    }
+    
+    button::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: var(--hover-bg);
+      border-radius: 50%;
+      transform: scale(0);
+      transition: transform var(--transition-speed) ease;
+      z-index: -1;
+    }
+    
+    button:hover::after {
+      transform: scale(1);
+    }
+    
+    button:active {
+      transform: scale(0.9);
+    }
+    
+    .btn-primary {
+      background: var(--primary-color);
+      width: 45px;
+      height: 45px;
+    }
+    
+    .btn-primary:hover::after {
+      background: rgba(229, 9, 20, 0.7);
+    }
+    
+    .volume-container {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .volume-slider {
+      width: 80px;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.2);
+      cursor: pointer;
+      appearance: none;
+      border-radius: 2px;
+      opacity: 1; /* Always visible now */
+      transform: scaleX(1); /* Always visible now */
+      transform-origin: left;
+    }
+    
+    .volume-slider::-webkit-slider-thumb {
+      appearance: none;
+      width: 12px;
+      height: 12px;
+      background: var(--primary-color);
+      border-radius: 50%;
+      cursor: pointer;
+    }
+    
+    .time {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-primary);
+      min-width: 140px;
+      text-align: center;
+    }
+    
+    .overlay-play,
+    .rewind-overlay,
+    .forward-overlay {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      color: white;
+      font-size: 3rem;
+      opacity: 0;
+      transition: opacity var(--transition-speed);
+      pointer-events: none;
+      z-index: 5;
+      background: rgba(0, 0, 0, 0.5);
+      border-radius: 50%;
+      width: 80px;
+      height: 80px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    
+    .overlay-play {
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+    
+    .rewind-overlay {
+      left: 15%;
+    }
+    
+    .forward-overlay {
+      right: 15%;
+    }
+    
+    .show {
+      opacity: 1 !important;
+    }
+    
+    .speed-menu {
+      position: absolute;
+      bottom: 70px;
+      right: 15px;
+      background: var(--bg-light);
+      border-radius: 4px;
+      overflow: hidden;
+      display: none;
+      flex-direction: column;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+      z-index: 20;
+      min-width: 120px;
+    }
+    
+    .speed-menu button {
+      width: 100%;
+      border-radius: 0;
+      font-size: 14px;
+      padding: 10px 15px;
+      text-align: left;
+      justify-content: flex-start;
+      color: var(--text-secondary);
+      height: auto;
+    }
+    
+    .speed-menu button:hover {
+      color: var(--text-primary);
+      background: var(--hover-bg);
+    }
+    
+    .speed-menu button.active {
+      color: var(--primary-color);
+      font-weight: 500;
+    }
+    
+    @media (max-width: 768px) {
+      .player {
+        width: 100%;
+        border-radius: 0;
+      }
+      
+      .controls {
+        padding: 8px 10px;
+        height: 60px;
+      }
+      
+      button {
+        width: 36px;
+        height: 36px;
+        font-size: 16px;
+      }
+      
+      .btn-primary {
+        width: 40px;
+        height: 40px;
+      }
+      
+      .volume-slider {
+        width: 60px;
+      }
+      
+      .time {
+        font-size: 12px;
+        min-width: 110px;
+      }
+      
+      .overlay-play,
+      .rewind-overlay,
+      .forward-overlay {
+        font-size: 2.5rem;
+        width: 70px;
+        height: 70px;
+      }
+    }
+  </style>
 </head>
 <body>
 
-<div class="container">
-    <div class="player" id="player">
-        <video id="video" src="https://faststreaming.cybersyncc.workers.dev/?src={{file_url}}" preload="metadata"></video>
+<div class="player" id="player">
+  <video id="video" src="https://faststreaming.cybersyncc.workers.dev/?src={{file_url}}" preload="metadata"></video>
 
-        <div class="controls-container" id="controlsContainer">
-            <div class="progress-container" id="progressBar">
-                <div class="buffer-bar" id="bufferBar"></div>
-                <div class="progress" id="progress">
-                    <div class="progress-handle"></div>
-                </div>
-                <div class="hover-time" id="hoverTime">00:00:00</div>
-            </div>
+  <!-- Title Bar (hidden) -->
+  <div class="title-bar" id="titleBar"></div>
 
-            <div class="controls" id="controls">
-                <div class="btn-group">
-                    <button id="rewindBtn" class="control-btn" title="Rewind 10s"><i class="fas fa-undo-alt"></i></button>
-                    <button id="playBtn" class="btn-primary control-btn" title="Play/Pause"><i class="fas fa-play"></i></button>
-                    <button id="forwardBtn" class="control-btn" title="Forward 10s"><i class="fas fa-redo-alt"></i></button>
-                </div>
-                <div class="time" id="time">00:00:00 / 00:00:00</div>
-                <div class="btn-group">
-                    <div class="volume-container">
-                        <button id="muteBtn" class="control-btn" title="Mute"><i class="fas fa-volume-up"></i></button>
-                        <div class="volume-slider-container">
-                            <input type="range" min="0" max="1" step="0.05" value="1" class="volume-slider" id="volumeSlider">
-                        </div>
-                    </div>
-                    <button id="speedBtn" class="control-btn" title="Playback speed"><i class="fas fa-tachometer-alt"></i></button>
-                    <button id="pipBtn" class="control-btn" title="Picture-in-Picture"><i class="fas fa-clone"></i></button>
-                    <button id="fullscreenBtn" class="control-btn" title="Fullscreen"><i class="fas fa-expand"></i></button>
-                </div>
-            </div>
-        </div>
-
-        <div class="overlay-play" id="overlayPlay"><i class="fas fa-play"></i></div>
-        <div class="rewind-overlay" id="rewindOverlay"><i class="fas fa-backward"></i> 10s</div>
-        <div class="forward-overlay" id="forwardOverlay">10s <i class="fas fa-forward"></i></div>
-
-        <div class="speed-menu" id="speedMenu">
-            <button data-speed="0.5">0.5x</button>
-            <button data-speed="0.75">0.75x</button>
-            <button data-speed="1" class="active">1x (Normal)</button>
-            <button data-speed="1.25">1.25x</button>
-            <button data-speed="1.5">1.5x</button>
-            <button data-speed="2">2x</button>
-        </div>
+  <!-- Controls Container -->
+  <div class="controls-container" id="controlsContainer">
+    <!-- Progress Bar -->
+    <div class="progress-container" id="progressBar">
+      <div class="progress" id="progress">
+        <div class="progress-handle"></div>
+      </div>
     </div>
+
+    <!-- Controls -->
+    <div class="controls" id="controls">
+      <div class="btn-group">
+        <button onclick="rewind()" id="rewindBtn" title="Rewind 10s"><i class="fas fa-undo-alt"></i></button>
+        <button onclick="togglePlay()" id="playBtn" class="btn-primary" title="Play/Pause"><i class="fas fa-play"></i></button>
+        <button onclick="forward()" id="forwardBtn" title="Forward 10s"><i class="fas fa-redo-alt"></i></button>
+      </div>
+      <div class="time" id="time">00:00:00 / 00:00:00</div>
+      <div class="btn-group">
+        <div class="volume-container">
+          <button onclick="toggleMute()" id="muteBtn" title="Mute"><i class="fas fa-volume-up"></i></button>
+          <input type="range" min="0" max="1" step="0.05" value="1" class="volume-slider" oninput="setVolume(this.value)">
+        </div>
+        <button onclick="toggleSpeedMenu()" title="Playback speed"><i class="fas fa-tachometer-alt"></i></button>
+        <button onclick="togglePiP()" title="Picture-in-Picture"><i class="fas fa-clone"></i></button>
+        <button onclick="toggleFullScreen()" title="Fullscreen"><i class="fas fa-expand"></i></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Overlay Elements -->
+  <div class="overlay-play" id="overlayPlay"><i class="fas fa-play"></i></div>
+  <div class="rewind-overlay" id="rewindOverlay"><i class="fas fa-backward"></i> 10s</div>
+  <div class="forward-overlay" id="forwardOverlay">10s <i class="fas fa-forward"></i></div>
+
+  <!-- Speed Options -->
+  <div class="speed-menu" id="speedMenu">
+    <button onclick="setSpeed(0.5)">0.5x</button>
+    <button onclick="setSpeed(1)" class="active">1x (Normal)</button>
+    <button onclick="setSpeed(1.5)">1.5x</button>
+    <button onclick="setSpeed(2)">2x</button>
+  </div>
 </div>
 
-<!-- Link to remote JS file from GitHub Gist -->
-<script src="https://gist.githubusercontent.com/luciferworld/cb679c9dc7deb6702e379c61d2c36fb1/raw/e1066c079b9f393c253ec1a3d953cf0192a56d8e/script.js"></script>
+<script>
+  const video = document.getElementById('video');
+  const player = document.getElementById('player');
+  const controlsContainer = document.getElementById('controlsContainer');
+  const progressBar = document.getElementById('progressBar');
+  const progress = document.getElementById('progress');
+  const playBtn = document.getElementById('playBtn');
+  const muteBtn = document.getElementById('muteBtn');
+  const timeDisplay = document.getElementById('time');
+  const overlayPlay = document.getElementById('overlayPlay');
+  const rewindOverlay = document.getElementById('rewindOverlay');
+  const forwardOverlay = document.getElementById('forwardOverlay');
+  const titleBar = document.getElementById('titleBar');
+  const speedMenu = document.getElementById('speedMenu');
+  const speedButtons = speedMenu.querySelectorAll('button');
+
+  let hideControlsTimeout;
+  let isFullScreen = false;
+  let isDraggingProgress = false;
+  let mouseInControls = false;
+  let lastForwardTime = 0;
+  let lastRewindTime = 0;
+  let forwardCount = 0;
+  let rewindCount = 0;
+
+  // Initialize player
+  document.addEventListener('DOMContentLoaded', function() {
+    titleBar.style.display = 'none';
+    updateTime();
+    showControls();
+  });
+
+  // Show controls
+  function showControls() {
+    controlsContainer.classList.remove('hidden');
+    clearTimeout(hideControlsTimeout);
+    
+    if (isFullScreen) {
+      hideControlsTimeout = setTimeout(() => {
+        if (!mouseInControls && !isDraggingProgress) {
+          hideControls();
+        }
+      }, 3000);
+    }
+  }
+
+  // Hide controls (fullscreen only)
+  function hideControls() {
+    if (isFullScreen) {
+      controlsContainer.classList.add('hidden');
+    }
+  }
+
+  // Mouse movement handler
+  function handleMouseMove() {
+    showControls();
+  }
+
+  // Fullscreen listeners
+  function setupFullScreenListeners() {
+    document.addEventListener('fullscreenchange', () => {
+      isFullScreen = !!document.fullscreenElement;
+      if (isFullScreen) {
+        document.addEventListener('mousemove', handleMouseMove);
+        setTimeout(hideControls, 3000);
+      } else {
+        document.removeEventListener('mousemove', handleMouseMove);
+        showControls();
+      }
+    });
+
+    document.addEventListener('webkitfullscreenchange', () => {
+      isFullScreen = !!document.webkitFullscreenElement;
+      if (isFullScreen) {
+        document.addEventListener('mousemove', handleMouseMove);
+        setTimeout(hideControls, 3000);
+      } else {
+        document.removeEventListener('mousemove', handleMouseMove);
+        showControls();
+      }
+    });
+  }
+
+  setupFullScreenListeners();
+
+  // Track mouse in controls area
+  controlsContainer.addEventListener('mouseenter', () => {
+    mouseInControls = true;
+    showControls();
+  });
+
+  controlsContainer.addEventListener('mouseleave', () => {
+    mouseInControls = false;
+    if (isFullScreen) {
+      setTimeout(hideControls, 1000);
+    }
+  });
+
+  // Play/Pause function
+  function togglePlay() {
+    if (video.paused) {
+      video.play();
+      playBtn.innerHTML = '<i class="fas fa-pause"></i>';
+      overlayPlay.classList.remove('show');
+    } else {
+      video.pause();
+      playBtn.innerHTML = '<i class="fas fa-play"></i>';
+      overlayPlay.classList.add('show');
+    }
+    showControls();
+  }
+
+  // Rewind function with 10s increments
+  function rewind() {
+    const now = Date.now();
+    const jumpAmount = 10 * (rewindCount + 1);
+    
+    if (now - lastRewindTime > 1000) {
+      rewindCount = 0;
+    }
+    
+    video.currentTime = Math.max(0, video.currentTime - jumpAmount);
+    rewindOverlay.innerHTML = `<i class="fas fa-backward"></i> ${jumpAmount}s`;
+    rewindOverlay.classList.add('show');
+    
+    setTimeout(() => {
+      rewindOverlay.classList.remove('show');
+    }, 700);
+    
+    lastRewindTime = now;
+    rewindCount++;
+    setTimeout(() => {
+      if (Date.now() - lastRewindTime > 1000) {
+        rewindCount = 0;
+      }
+    }, 1000);
+    
+    showControls();
+  }
+
+  // Forward function with 10s increments
+  function forward() {
+    const now = Date.now();
+    const jumpAmount = 10 * (forwardCount + 1);
+    
+    if (now - lastForwardTime > 1000) {
+      forwardCount = 0;
+    }
+    
+    video.currentTime = Math.min(video.duration, video.currentTime + jumpAmount);
+    forwardOverlay.innerHTML = `${jumpAmount}s <i class="fas fa-forward"></i>`;
+    forwardOverlay.classList.add('show');
+    
+    setTimeout(() => {
+      forwardOverlay.classList.remove('show');
+    }, 700);
+    
+    lastForwardTime = now;
+    forwardCount++;
+    setTimeout(() => {
+      if (Date.now() - lastForwardTime > 1000) {
+        forwardCount = 0;
+      }
+    }, 1000);
+    
+    showControls();
+  }
+
+  // Mute toggle function
+  function toggleMute() {
+    video.muted = !video.muted;
+    muteBtn.innerHTML = video.muted ? '<i class="fas fa-volume-mute"></i>' : '<i class="fas fa-volume-up"></i>';
+    showControls();
+  }
+
+  // Set volume
+  function setVolume(val) {
+    video.volume = val;
+    video.muted = false;
+    muteBtn.innerHTML = '<i class="fas fa-volume-up"></i>';
+    showControls();
+  }
+
+  // Update progress bar
+  function updateProgress() {
+    if (!isDraggingProgress && video.duration) {
+      const percent = (video.currentTime / video.duration) * 100;
+      progress.style.width = percent + '%';
+    }
+    updateTime();
+  }
+
+  // Seek function with YouTube-style dragging
+  function setupProgressBar() {
+    progressBar.addEventListener('mousedown', (e) => {
+      isDraggingProgress = true;
+      seek(e);
+      showControls();
+    });
+
+    document.addEventListener('mousemove', (e) => {
+      if (isDraggingProgress) {
+        seek(e);
+        showControls();
+      }
+    });
+
+    document.addEventListener('mouseup', () => {
+      if (isDraggingProgress) {
+        isDraggingProgress = false;
+        showControls();
+      }
+    });
+
+    progressBar.addEventListener('click', seek);
+  }
+
+  function seek(e) {
+    const rect = progressBar.getBoundingClientRect();
+    let percent = (e.clientX - rect.left) / rect.width;
+    percent = Math.max(0, Math.min(1, percent));
+    progress.style.width = (percent * 100) + '%';
+    
+    if (video.duration) {
+      video.currentTime = percent * video.duration;
+    }
+  }
+
+  // Format time as HH:MM:SS
+  function formatTime(seconds) {
+    if (isNaN(seconds)) return '00:00:00';
+    
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    const s = Math.floor(seconds % 60);
+    
+    return [
+      h.toString().padStart(2, '0'),
+      m.toString().padStart(2, '0'),
+      s.toString().padStart(2, '0')
+    ].join(':');
+  }
+
+  // Update time display
+  function updateTime() {
+    const current = video.currentTime || 0;
+    const duration = video.duration || 0;
+    timeDisplay.innerText = `${formatTime(current)} / ${formatTime(duration)}`;
+  }
+
+  // Speed menu toggle
+  function toggleSpeedMenu() {
+    speedMenu.style.display = speedMenu.style.display === 'flex' ? 'none' : 'flex';
+    showControls();
+  }
+
+  // Set speed
+  function setSpeed(speed) {
+    video.playbackRate = speed;
+    speedMenu.style.display = 'none';
+    
+    // Update active button in speed menu
+    speedButtons.forEach(btn => {
+      btn.classList.remove('active');
+      if (parseFloat(btn.textContent) === speed) {
+        btn.classList.add('active');
+      }
+    });
+    
+    showControls();
+  }
+
+  // Fullscreen toggle
+  function toggleFullScreen() {
+    if (isFullScreen) {
+      if (document.exitFullscreen) document.exitFullscreen();
+      else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+    } else {
+      if (player.requestFullscreen) player.requestFullscreen();
+      else if (player.webkitRequestFullscreen) player.webkitRequestFullscreen();
+    }
+  }
+
+  // Picture in Picture toggle
+  function togglePiP() {
+    if (video !== document.pictureInPictureElement) {
+      video.requestPictureInPicture().catch(err => {
+        console.error("PiP failed:", err);
+      });
+    } else {
+      document.exitPictureInPicture();
+    }
+    showControls();
+  }
+
+  // Event listeners
+  video.addEventListener('play', () => {
+    playBtn.innerHTML = '<i class="fas fa-pause"></i>';
+    overlayPlay.classList.remove('show');
+  });
+
+  video.addEventListener('pause', () => {
+    playBtn.innerHTML = '<i class="fas fa-play"></i>';
+    overlayPlay.classList.add('show');
+  });
+
+  video.addEventListener('timeupdate', updateProgress);
+  video.addEventListener('click', togglePlay);
+  player.addEventListener('mousemove', showControls);
+
+  // Keyboard controls
+  document.addEventListener('keydown', (e) => {
+    if (e.code === 'Space') {
+      e.preventDefault();
+      togglePlay();
+    } else if (e.code === 'ArrowLeft') {
+      rewind();
+    } else if (e.code === 'ArrowRight') {
+      forward();
+    }
+  });
+
+  // Initialize progress bar functionality
+  setupProgressBar();
+
+  // Hide controls after 3 seconds (fullscreen only)
+  if (isFullScreen) {
+    setTimeout(hideControls, 3000);
+  }
+</script>
 
 </body>
 </html>
