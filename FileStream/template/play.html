@@ -538,6 +538,82 @@ video {
   }
 }
   
+  /* Add these styles to your existing CSS */
+@media (max-width: 768px) {
+  /* Make player full width on mobile */
+  .player {
+    width: 100vw;
+    height: calc(100vw * 9/16);
+    border-radius: 0;
+  }
+  
+  /* Larger touch targets for mobile */
+  .control-btn {
+    width: 44px;
+    height: 44px;
+    font-size: 20px;
+  }
+  
+  .btn-primary {
+    width: 54px;
+    height: 54px;
+  }
+  
+  /* Bigger progress bar for touch */
+  .progress-container {
+    height: 8px;
+  }
+  
+  .progress-container:hover {
+    height: 12px;
+  }
+  
+  /* Larger volume slider thumb */
+  .volume-slider::-webkit-slider-thumb {
+    width: 18px;
+    height: 18px;
+  }
+  
+  /* Touch areas for mobile controls */
+  .player-touch-areas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 4;
+    display: flex;
+  }
+  
+  .touch-area {
+    height: 100%;
+    flex: 1;
+  }
+  
+  /* Hide touch areas when controls are visible */
+  .controls-container:not(.hidden) ~ .player-touch-areas {
+    pointer-events: none;
+  }
+}
+
+/* Landscape-specific adjustments */
+@media (max-width: 915px) and (orientation: landscape) {
+  .player {
+    width: 100vw;
+    height: 100vh;
+    border-radius: 0;
+  }
+  
+  /* More compact controls in landscape */
+  .controls {
+    padding: 6px 16px 12px;
+  }
+  
+  /* Hide less important controls in landscape */
+  .volume-slider-container {
+    display: none;
+  }
+}
 }
   </style>
 </head>
@@ -1161,6 +1237,108 @@ function togglePiP() {
     });
   }
   showControls();
+  // Add this JavaScript to your existing code
+// Create touch areas for mobile controls
+const playerArea = document.createElement('div');
+playerArea.className = 'player-touch-areas';
+player.appendChild(playerArea);
+
+// Create touch areas (left, center, right)
+const leftArea = document.createElement('div');
+leftArea.className = 'touch-area left-area';
+leftArea.addEventListener('click', rewind);
+
+const centerArea = document.createElement('div');
+centerArea.className = 'touch-area center-area';
+centerArea.addEventListener('click', togglePlay);
+
+const rightArea = document.createElement('div');
+rightArea.className = 'touch-area right-area';
+rightArea.addEventListener('click', forward);
+
+playerArea.appendChild(leftArea);
+playerArea.appendChild(centerArea);
+playerArea.appendChild(rightArea);
+
+// Handle touch events for controls
+let touchStartX = 0;
+let touchStartTime = 0;
+
+player.addEventListener('touchstart', (e) => {
+  touchStartX = e.touches[0].clientX;
+  touchStartTime = Date.now();
+  showControls();
+});
+
+player.addEventListener('touchend', (e) => {
+  const touchEndX = e.changedTouches[0].clientX;
+  const touchEndTime = Date.now();
+  const deltaX = touchEndX - touchStartX;
+  const deltaTime = touchEndTime - touchStartTime;
+  
+  // Swipe left (forward)
+  if (deltaX < -50 && deltaTime < 300) {
+    forward();
+  }
+  // Swipe right (rewind)
+  else if (deltaX > 50 && deltaTime < 300) {
+    rewind();
+  }
+});
+
+// Handle fullscreen on mobile
+function toggleFullScreen() {
+  if (isFullScreen) {
+    if (document.exitFullscreen) document.exitFullscreen();
+    else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+    else if (document.mozCancelFullScreen) document.mozCancelFullScreen();
+    else if (document.msExitFullscreen) document.msExitFullscreen();
+  } else {
+    if (player.requestFullscreen) player.requestFullscreen();
+    else if (player.webkitRequestFullscreen) player.webkitRequestFullscreen();
+    else if (player.mozRequestFullScreen) player.mozRequestFullScreen();
+    else if (player.msRequestFullscreen) player.msRequestFullscreen();
+    
+    // Try to force landscape on mobile
+    if (window.innerWidth < 768 && window.matchMedia("(orientation: portrait)").matches) {
+      if ('orientation' in screen && 'lock' in screen.orientation) {
+        screen.orientation.lock('landscape').catch(e => {
+          console.log('Could not lock orientation: ', e);
+        });
+      }
+    }
+  }
+}
+
+// Handle orientation changes
+function handleOrientationChange() {
+  if (isFullScreen) {
+    if (window.orientation === 0 || window.orientation === 180) {
+      if ('orientation' in screen && 'lock' in screen.orientation) {
+        screen.orientation.lock('landscape').catch(e => {
+          console.log('Orientation lock not supported');
+        });
+      }
+    }
+  } else if (document.fullscreenElement === null) {
+    if ('orientation' in screen && 'unlock' in screen.orientation) {
+      screen.orientation.unlock();
+    }
+  }
+}
+
+window.addEventListener('orientationchange', handleOrientationChange);
+
+// Double tap to play/pause
+let lastTapTime = 0;
+player.addEventListener('touchend', (e) => {
+  const currentTime = Date.now();
+  const tapLength = currentTime - lastTapTime;
+  if (tapLength < 300 && tapLength > 0) {
+    togglePlay();
+  }
+  lastTapTime = currentTime;
+});
 }
 </script>
 
