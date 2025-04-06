@@ -3,598 +3,597 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Premium Video Player</title>
+  <title>{{file_name}}</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     :root {
-      --primary-color: #00a8e1;
-      --primary-hover: #0091c8;
-      --secondary-color: #f5f5f5;
-      --bg-dark: #0f0f0f;
-      --bg-light: #1a1a1a;
-      --text-primary: #ffffff;
-      --text-secondary: #b3b3b3;
-      --hover-bg: rgba(255, 255, 255, 0.15);
-      --progress-height: 4px;
-      --controls-height: 75px;
-      --transition-speed: 0.2s;
-      --buffer-color: rgba(255, 255, 255, 0.4);
-      --overlay-bg: rgba(0, 0, 0, 0.5);
-      --progress-hover-color: #00c3ff;
-    }
+  --primary-color: #00a8e1;
+  --primary-hover: #0091c8;
+  --secondary-color: #f5f5f5;
+  --bg-dark: #0f0f0f;
+  --bg-light: #1a1a1a;
+  --text-primary: #ffffff;
+  --text-secondary: #b3b3b3;
+  --hover-bg: rgba(255, 255, 255, 0.15);
+  --progress-height: 4px;
+  --controls-height: 75px;
+  --transition-speed: 0.2s;
+  --buffer-color: rgba(255, 255, 255, 0.4);
+  --overlay-bg: rgba(0, 0, 0, 0.5);
+  --progress-hover-color: #00c3ff;
+}
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
 
-    body {
-      font-family: 'Inter', sans-serif;
-      background: var(--bg-dark);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      color: var(--text-primary);
-    }
+body {
+  font-family: 'Inter', sans-serif;
+  background: var(--bg-dark);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  color: var(--text-primary);
+}
 
-    .container {
-      width: 100%;
-      height: 100%;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding: 20px;
-    }
+.container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
 
-    .player {
-      position: relative;
-      width: min(90vw, 75vh * 16/9);
-      height: min(50vw * 9/16, 75vh);
-      border-radius: 16px;
-      overflow: hidden;
-      background: #000;
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
-    }
+.player {
+  position: relative;
+  width: min(90vw, 75vh * 16/9);
+  height: min(50vw * 9/16, 75vh);
+  border-radius: 16px;
+  overflow: hidden;
+  background: #000;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
+}
 
-    video {
-      width: 100%;
-      height: 100%;
-      display: block;
-      object-fit: contain;
-    }
+video {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: contain;
+}
 
-    .title-bar {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      padding: 24px;
-      background: linear-gradient(to bottom, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.4) 60%, transparent 100%);
-      z-index: 10;
-      transition: opacity var(--transition-speed) ease;
-    }
+.title-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  padding: 24px;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.4) 60%, transparent 100%);
+  z-index: 10;
+  transition: opacity var(--transition-speed) ease;
+}
 
-    .title-bar h3 {
-      font-weight: 600;
-      font-size: 20px;
-      margin: 0;
-      letter-spacing: 0.3px;
-      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-    }
+.title-bar h3 {
+  font-weight: 600;
+  font-size: 20px;
+  margin: 0;
+  letter-spacing: 0.3px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
 
-    .controls-container {
-      position: absolute;
-      bottom: 0;
-      width: 100%;
-      z-index: 10;
-      background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.4) 80%, transparent 100%);
-      transition: all 0.3s ease;
-      padding-top: 40px;
-    }
+.controls-container {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  z-index: 10;
+  background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.4) 80%, transparent 100%);
+  transition: all 0.3s ease;
+  padding-top: 40px;
+}
 
-    .controls-container.hidden {
-      transform: translateY(100%);
-      opacity: 0;
-    }
+.controls-container.hidden {
+  transform: translateY(100%);
+  opacity: 0;
+}
 
-    .progress-container {
-      width: 100%;
-      height: var(--progress-height);
-      background: rgba(255, 255, 255, 0.2);
-      cursor: pointer;
-      position: relative;
-      margin-bottom: 8px;
-      backdrop-filter: blur(2px);
-    }
+.progress-container {
+  width: 100%;
+  height: var(--progress-height);
+  background: rgba(255, 255, 255, 0.2);
+  cursor: pointer;
+  position: relative;
+  margin-bottom: 8px;
+  backdrop-filter: blur(2px);
+}
 
-    .progress-container:hover {
-      height: 8px;
-      transition: height 0.15s ease;
-    }
+.progress-container:hover {
+  height: 8px;
+  transition: height 0.15s ease;
+}
 
-    .buffer-bar {
-      position: absolute;
-      height: 100%;
-      background-color: var(--buffer-color);
-      width: 0%;
-      border-radius: 4px;
-    }
+.buffer-bar {
+  position: absolute;
+  height: 100%;
+  background-color: var(--buffer-color);
+  width: 0%;
+  border-radius: 4px;
+}
 
-    .progress {
-      height: 100%;
-      background: linear-gradient(90deg, var(--primary-color), var(--primary-hover));
-      width: 0%;
-      position: relative;
-      transition: width 0.1s linear;
-      border-radius: 4px;
-    }
+.progress {
+  height: 100%;
+  background: linear-gradient(90deg, var(--primary-color), var(--primary-hover));
+  width: 0%;
+  position: relative;
+  transition: width 0.1s linear;
+  border-radius: 4px;
+}
 
-    .progress-handle {
-      position: absolute;
-      right: -10px;
-      top: 50%;
-      transform: translateY(-50%) scale(0);
-      width: 18px;
-      height: 18px;
-      background: #ffffff;
-      border-radius: 50%;
-      opacity: 0;
-      transition: all 0.2s ease;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.7);
-      border: 2px solid var(--primary-color);
-    }
+.progress-handle {
+  position: absolute;
+  right: -10px;
+  top: 50%;
+  transform: translateY(-50%) scale(0);
+  width: 18px;
+  height: 18px;
+  background: #ffffff;
+  border-radius: 50%;
+  opacity: 0;
+  transition: all 0.2s ease;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.7);
+  border: 2px solid var(--primary-color);
+}
 
-    .progress-container:hover .progress-handle {
-      opacity: 1;
-      transform: translateY(-50%) scale(1);
-    }
+.progress-container:hover .progress-handle {
+  opacity: 1;
+  transform: translateY(-50%) scale(1);
+}
 
-    .hover-time {
-      position: absolute;
-      top: -34px;
-      background: rgba(0, 0, 0, 0.8);
-      color: var(--text-primary);
-      padding: 6px 10px;
-      border-radius: 6px;
-      font-size: 12px;
-      font-weight: 500;
-      transform: translateX(-50%);
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.2s;
-      backdrop-filter: blur(5px);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-    }
+.hover-time {
+  position: absolute;
+  top: -34px;
+  background: rgba(0, 0, 0, 0.8);
+  color: var(--text-primary);
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  transform: translateX(-50%);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s;
+  backdrop-filter: blur(5px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
 
-    .progress-container:hover .hover-time {
-      opacity: 1;
-    }
+.progress-container:hover .hover-time {
+  opacity: 1;
+}
 
-    .controls {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 12px 24px 24px;
-      height: var(--controls-height);
-    }
+.controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 24px 24px;
+  height: var(--controls-height);
+}
 
-    .btn-group {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-    }
+.btn-group {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
 
-    .control-btn {
-      background: transparent;
-      border: none;
-      color: var(--text-primary);
-      font-size: 18px;
-      width: 44px;
-      height: 44px;
-      cursor: pointer;
-      border-radius: 50%;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      transition: all var(--transition-speed) ease;
-      position: relative;
-      backdrop-filter: blur(2px);
-    }
+.control-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  font-size: 18px;
+  width: 44px;
+  height: 44px;
+  cursor: pointer;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: all var(--transition-speed) ease;
+  position: relative;
+  backdrop-filter: blur(2px);
+}
 
-    .control-btn::after {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: var(--hover-bg);
-      border-radius: 50%;
-      transform: scale(0);
-      transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-      z-index: -1;
-    }
+.control-btn::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--hover-bg);
+  border-radius: 50%;
+  transform: scale(0);
+  transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  z-index: -1;
+}
 
-    .control-btn:hover::after {
-      transform: scale(1);
-    }
+.control-btn:hover::after {
+  transform: scale(1);
+}
 
-    .control-btn:active {
-      transform: scale(0.92);
-    }
+.control-btn:active {
+  transform: scale(0.92);
+}
 
-    .btn-primary {
-      background: var(--primary-color);
-      width: 54px;
-      height: 54px;
-      box-shadow: 0 2px 15px rgba(0, 168, 225, 0.5);
-      font-size: 20px;
-    }
+.btn-primary {
+  background: var(--primary-color);
+  width: 54px;
+  height: 54px;
+  box-shadow: 0 2px 15px rgba(0, 168, 225, 0.5);
+  font-size: 20px;
+}
 
-    .btn-primary:hover {
-      background: var(--primary-hover);
-    }
+.btn-primary:hover {
+  background: var(--primary-hover);
+}
 
-    .btn-primary:hover::after {
-      background: rgba(255, 255, 255, 0.1);
-    }
+.btn-primary:hover::after {
+  background: rgba(255, 255, 255, 0.1);
+}
 
-    .volume-container {
-      display: flex;
-      align-items: center;
-      position: relative;
-    }
+.volume-container {
+  display: flex;
+  align-items: center;
+  position: relative;
+}
 
-    .volume-slider-container {
-      overflow: hidden;
-      width: 0;
-      transition: width 0.3s ease;
-      margin-left: 0;
-    }
+.volume-slider-container {
+  overflow: hidden;
+  width: 0;
+  transition: width 0.3s ease;
+  margin-left: 0;
+}
 
-    .volume-container:hover .volume-slider-container {
-      width: 90px;
-      margin-left: 8px;
-    }
+.volume-container:hover .volume-slider-container {
+  width: 90px;
+  margin-left: 8px;
+}
 
-    .volume-slider {
-      width: 90px;
-      height: 4px;
-      background: rgba(255, 255, 255, 0.3);
-      cursor: pointer;
-      appearance: none;
-      border-radius: 4px;
-    }
+.volume-slider {
+  width: 90px;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.3);
+  cursor: pointer;
+  appearance: none;
+  border-radius: 4px;
+}
 
-    .volume-slider::-webkit-slider-thumb {
-      appearance: none;
-      width: 14px;
-      height: 14px;
-      background: #ffffff;
-      border-radius: 50%;
-      cursor: pointer;
-      box-shadow: 0 0 8px rgba(0, 0, 0, 0.5);
-      border: 2px solid var(--primary-color);
-    }
+.volume-slider::-webkit-slider-thumb {
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  background: #ffffff;
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.5);
+  border: 2px solid var(--primary-color);
+}
 
-    .time {
-      font-size: 15px;
-      font-weight: 600;
-      color: var(--text-primary);
-      min-width: 150px;
-      text-align: center;
-      letter-spacing: 0.3px;
-      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
-    }
+.time {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+  min-width: 150px;
+  text-align: center;
+  letter-spacing: 0.3px;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+}
 
-    .overlay-play,
-    .rewind-overlay,
-    .forward-overlay {
-      position: absolute;
-      top: 50%;
-      transform: translateY(-50%);
-      color: white;
-      font-size: 3rem;
-      opacity: 0;
-      transition: opacity var(--transition-speed), transform 0.3s;
-      pointer-events: none;
-      z-index: 5;
-      background: var(--overlay-bg);
-      backdrop-filter: blur(8px);
-      border-radius: 50%;
-      width: 100px;
-      height: 100px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      box-shadow: 0 4px 30px rgba(0, 0, 0, 0.6);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-    }
+.overlay-play,
+.rewind-overlay,
+.forward-overlay {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  color: white;
+  font-size: 3rem;
+  opacity: 0;
+  transition: opacity var(--transition-speed), transform 0.3s;
+  pointer-events: none;
+  z-index: 5;
+  background: var(--overlay-bg);
+  backdrop-filter: blur(8px);
+  border-radius: 50%;
+  width: 100px;
+  height: 100px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
 
-    .overlay-play {
-      left: 50%;
-      transform: translate(-50%, -50%) scale(0.95);
-    }
+.overlay-play {
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.95);
+}
 
-    .overlay-play.show {
-      transform: translate(-50%, -50%) scale(1);
-    }
+.overlay-play.show {
+  transform: translate(-50%, -50%) scale(1);
+}
 
-    .rewind-overlay {
-      left: 15%;
-      transform: translateY(-50%) scale(0.9);
-      border-radius: 20px;
-      width: 120px;
-    }
+.rewind-overlay {
+  left: 15%;
+  transform: translateY(-50%) scale(0.9);
+  border-radius: 20px;
+  width: 120px;
+}
 
-    .rewind-overlay.show {
-      transform: translateY(-50%) scale(1);
-    }
+.rewind-overlay.show {
+  transform: translateY(-50%) scale(1);
+}
 
-    .forward-overlay {
-      right: 15%;
-      transform: translateY(-50%) scale(0.9);
-      border-radius: 20px;
-      width: 120px;
-    }
+.forward-overlay {
+  right: 15%;
+  transform: translateY(-50%) scale(0.9);
+  border-radius: 20px;
+  width: 120px;
+}
 
-    .forward-overlay.show {
-      transform: translateY(-50%) scale(1);
-    }
+.forward-overlay.show {
+  transform: translateY(-50%) scale(1);
+}
 
-    .show {
-      opacity: 1 !important;
-    }
+.show {
+  opacity: 1 !important;
+}
 
-    .speed-menu {
-      position: absolute;
-      bottom: 85px;
-      right: 25px;
-      background: rgba(26, 26, 26, 0.95);
-      border-radius: 12px;
-      overflow: hidden;
-      display: none;
-      flex-direction: column;
-      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
-      z-index: 20;
-      min-width: 140px;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      backdrop-filter: blur(10px);
-    }
+.speed-menu {
+  position: absolute;
+  bottom: 85px;
+  right: 25px;
+  background: rgba(26, 26, 26, 0.95);
+  border-radius: 12px;
+  overflow: hidden;
+  display: none;
+  flex-direction: column;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+  z-index: 20;
+  min-width: 140px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+}
 
-    .speed-menu button {
-      width: 100%;
-      border-radius: 0;
-      font-size: 14px;
-      padding: 14px 18px;
-      text-align: left;
-      justify-content: flex-start;
-      color: var(--text-secondary);
-      height: auto;
-      background: transparent;
-      border: none;
-      cursor: pointer;
-      transition: all 0.2s;
-      font-weight: 500;
-    }
+.speed-menu button {
+  width: 100%;
+  border-radius: 0;
+  font-size: 14px;
+  padding: 14px 18px;
+  text-align: left;
+  justify-content: flex-start;
+  color: var(--text-secondary);
+  height: auto;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-weight: 500;
+}
 
-    .speed-menu button:hover {
-      color: var(--text-primary);
-      background: var(--hover-bg);
-    }
+.speed-menu button:hover {
+  color: var(--text-primary);
+  background: var(--hover-bg);
+}
 
-    .speed-menu button.active {
-      color: var(--primary-color);
-      font-weight: 600;
-      background: rgba(0, 168, 225, 0.1);
-    }
+.speed-menu button.active {
+  color: var(--primary-color);
+  font-weight: 600;
+  background: rgba(0, 168, 225, 0.1);
+}
 
-    /* Disabled state for progress bar */
-    .progress-container.disabled {
-      cursor: not-allowed;
-      opacity: 0.5;
-    }
+/* Disabled state for progress bar */
+.progress-container.disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
 
-    .progress-container.disabled .progress-handle {
-      display: none;
-    }
+.progress-container.disabled .progress-handle {
+  display: none;
+}
 
-    @media (max-width: 768px) {
-      .container {
-        padding: 10px;
-      }
-      
-      .player {
-        width: 95vw;
-        height: calc(95vw * 9/16);
-        border-radius: 12px;
-      }
-      
-      .controls {
-        padding: 10px 16px 18px;
-        height: 68px;
-      }
-      
-      .control-btn {
-        width: 40px;
-        height: 40px;
-        font-size: 16px;
-      }
-      
-      .btn-primary {
-        width: 48px;
-        height: 48px;
-      }
-      
-      .volume-container:hover .volume-slider-container {
-        width: 65px;
-      }
-      
-      .time {
-        font-size: 13px;
-        min-width: 120px;
-      }
-      
-      .overlay-play,
-      .rewind-overlay,
-      .forward-overlay {
-        font-size: 2.5rem;
-        width: 80px;
-        height: 80px;
-      }
-      
-      .rewind-overlay,
-      .forward-overlay {
-        width: 100px;
-      }
-      
-      .title-bar h3 {
-        font-size: 18px;
-      }
-      /* Touch areas for mobile control */
-    .player-touch-areas {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      z-index: 4; /* Below control overlays but above video */
-      display: flex;
-    }
+@media (max-width: 768px) {
+  .container {
+    padding: 10px;
+  }
+  
+  .player {
+    width: 95vw;
+    height: calc(95vw * 9/16);
+    border-radius: 12px;
+  }
+  
+  .controls {
+    padding: 10px 16px 18px;
+    height: 68px;
+  }
+  
+  .control-btn {
+    width: 40px;
+    height: 40px;
+    font-size: 16px;
+  }
+  
+  .btn-primary {
+    width: 48px;
+    height: 48px;
+  }
+  
+  .volume-container:hover .volume-slider-container {
+    width: 65px;
+  }
+  
+  .time {
+    font-size: 13px;
+    min-width: 120px;
+  }
+  
+  .overlay-play,
+  .rewind-overlay,
+  .forward-overlay {
+    font-size: 2.5rem;
+    width: 80px;
+    height: 80px;
+  }
+  
+  .rewind-overlay,
+  .forward-overlay {
+    width: 100px;
+  }
+  
+  .title-bar h3 {
+    font-size: 18px;
+  }
+  /* Touch areas for mobile control */
+.player-touch-areas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 4; /* Below control overlays but above video */
+  display: flex;
+}
 
-    .touch-area {
-      height: 100%;
-      flex: 1;
-    }
+.touch-area {
+  height: 100%;
+  flex: 1;
+}
 
-    /* Hide touch areas when controls are visible */
-    .controls-container:not(.hidden) ~ .player-touch-areas {
-      pointer-events: none;
-    }
+/* Hide touch areas when controls are visible */
+.controls-container:not(.hidden) ~ .player-touch-areas {
+  pointer-events: none;
+}
 
-    /* Special mobile styles */
-    @media (max-width: 768px) {
-      .player {
-        width: 100vw;
-        height: calc(100vw * 9/16);
-        border-radius: 0;
-      }
-      
-      /* Fullscreen in landscape adjustments */
-      .player:fullscreen {
-        width: 100vw;
-        height: 100vh;
-      }
-      
-      /* Make controls bigger on touch devices */
-      .btn-group {
-        gap: 8px;
-      }
-      
-      .control-btn {
-        width: 38px;
-        height: 38px;
-      }
-      
-      /* Improve volume slider for touch */
-      .volume-slider {
-        height: 8px;
-      }
-      
-      .volume-slider::-webkit-slider-thumb {
-        width: 18px;
-        height: 18px;
-      }
-      
-      /* Bigger progress bar for touch */
-      .progress-container {
-        height: 6px;
-      }
-      
-      .progress-container:hover {
-        height: 12px;
-      }
-    }
+/* Special mobile styles */
+@media (max-width: 768px) {
+  .player {
+    width: 100vw;
+    height: calc(100vw * 9/16);
+    border-radius: 0;
+  }
+  
+  /* Fullscreen in landscape adjustments */
+  .player:fullscreen {
+    width: 100vw;
+    height: 100vh;
+  }
+  
+  /* Make controls bigger on touch devices */
+  .btn-group {
+    gap: 8px;
+  }
+  
+  .control-btn {
+    width: 38px;
+    height: 38px;
+  }
+  
+  /* Improve volume slider for touch */
+  .volume-slider {
+    height: 8px;
+  }
+  
+  .volume-slider::-webkit-slider-thumb {
+    width: 18px;
+    height: 18px;
+  }
+  
+  /* Bigger progress bar for touch */
+  .progress-container {
+    height: 6px;
+  }
+  
+  .progress-container:hover {
+    height: 12px;
+  }
+}
 
-    /* Landscape-specific adjustments */
-    @media (max-width: 915px) and (orientation: landscape) {
-      .player {
-        width: 100vw;
-        height: 100vh;
-        border-radius: 0;
-      }
-      
-      /* Make controls more compact in landscape mode */
-      .controls {
-        padding: 6px 16px 12px;
-      }
-      
-      /* Hide less important controls in landscape */
-      .volume-slider-container {
-        display: none;
-      }
-    }
-      
-    }
+/* Landscape-specific adjustments */
+@media (max-width: 915px) and (orientation: landscape) {
+  .player {
+    width: 100vw;
+    height: 100vh;
+    border-radius: 0;
+  }
+  
+  /* Make controls more compact in landscape mode */
+  .controls {
+    padding: 6px 16px 12px;
+  }
+  
+  /* Hide less important controls in landscape */
+  .volume-slider-container {
+    display: none;
+  }
+}
+  
+}
   </style>
 </head>
 <body>
 
-<div class="container">
-  <div class="player" id="player">
-    <video id="video" src="" preload="metadata"></video>
-
-    <div class="controls-container" id="controlsContainer">
-      <div class="progress-container" id="progressBar">
-        <div class="buffer-bar" id="bufferBar"></div>
-        <div class="progress" id="progress">
-          <div class="progress-handle"></div>
-        </div>
-        <div class="hover-time" id="hoverTime">00:00:00</div>
-      </div>
-
-      <div class="controls" id="controls">
-        <div class="btn-group">
-          <button id="rewindBtn" class="control-btn" title="Rewind 10s"><i class="fas fa-undo-alt"></i></button>
-          <button id="playBtn" class="btn-primary control-btn" title="Play/Pause"><i class="fas fa-play"></i></button>
-          <button id="forwardBtn" class="control-btn" title="Forward 10s"><i class="fas fa-redo-alt"></i></button>
-        </div>
-        <div class="time" id="time">00:00:00 / 00:00:00</div>
-        <div class="btn-group">
-          <div class="volume-container">
-            <button id="muteBtn" class="control-btn" title="Mute"><i class="fas fa-volume-up"></i></button>
-            <div class="volume-slider-container">
-              <input type="range" min="0" max="1" step="0.05" value="1" class="volume-slider" id="volumeSlider">
+    <div class="container">
+        <div class="player" id="player">
+          <video id="video" src="https://faststreaming.cybersyncc.workers.dev/?src={{file_url}}" preload="metadata"></video>
+      
+          <div class="controls-container" id="controlsContainer">
+            <div class="progress-container" id="progressBar">
+              <div class="buffer-bar" id="bufferBar"></div>
+              <div class="progress" id="progress">
+                <div class="progress-handle"></div>
+              </div>
+              <div class="hover-time" id="hoverTime">00:00:00</div>
+            </div>
+      
+            <div class="controls" id="controls">
+              <div class="btn-group">
+                <button id="rewindBtn" class="control-btn" title="Rewind 10s"><i class="fas fa-undo-alt"></i></button>
+                <button id="playBtn" class="btn-primary control-btn" title="Play/Pause"><i class="fas fa-play"></i></button>
+                <button id="forwardBtn" class="control-btn" title="Forward 10s"><i class="fas fa-redo-alt"></i></button>
+              </div>
+              <div class="time" id="time">00:00:00 / 00:00:00</div>
+              <div class="btn-group">
+                <div class="volume-container">
+                  <button id="muteBtn" class="control-btn" title="Mute"><i class="fas fa-volume-up"></i></button>
+                  <div class="volume-slider-container">
+                    <input type="range" min="0" max="1" step="0.05" value="1" class="volume-slider" id="volumeSlider">
+                  </div>
+                </div>
+                <button id="speedBtn" class="control-btn" title="Playback speed"><i class="fas fa-tachometer-alt"></i></button>
+                <button id="pipBtn" class="control-btn" title="Picture-in-Picture"><i class="fas fa-clone"></i></button>
+                <button id="fullscreenBtn" class="control-btn" title="Fullscreen"><i class="fas fa-expand"></i></button>
+              </div>
             </div>
           </div>
-          <button id="speedBtn" class="control-btn" title="Playback speed"><i class="fas fa-tachometer-alt"></i></button>
-          <button id="pipBtn" class="control-btn" title="Picture-in-Picture"><i class="fas fa-clone"></i></button>
-          <button id="fullscreenBtn" class="control-btn" title="Fullscreen"><i class="fas fa-expand"></i></button>
+      
+          <div class="overlay-play" id="overlayPlay"><i class="fas fa-play"></i></div>
+          <div class="rewind-overlay" id="rewindOverlay"><i class="fas fa-backward"></i> 10s</div>
+          <div class="forward-overlay" id="forwardOverlay">10s <i class="fas fa-forward"></i></div>
+      
+          <div class="speed-menu" id="speedMenu">
+            <button data-speed="0.5">0.5x</button>
+            <button data-speed="0.75">0.75x</button>
+            <button data-speed="1" class="active">1x (Normal)</button>
+            <button data-speed="1.25">1.25x</button>
+            <button data-speed="1.5">1.5x</button>
+            <button data-speed="2">2x</button>
+          </div>
         </div>
       </div>
-    </div>
-
-    <div class="overlay-play" id="overlayPlay"><i class="fas fa-play"></i></div>
-    <div class="rewind-overlay" id="rewindOverlay"><i class="fas fa-backward"></i> 10s</div>
-    <div class="forward-overlay" id="forwardOverlay">10s <i class="fas fa-forward"></i></div>
-
-    <div class="speed-menu" id="speedMenu">
-      <button data-speed="0.5">0.5x</button>
-      <button data-speed="0.75">0.75x</button>
-      <button data-speed="1" class="active">1x (Normal)</button>
-      <button data-speed="1.25">1.25x</button>
-      <button data-speed="1.5">1.5x</button>
-      <button data-speed="2">2x</button>
-    </div>
-  </div>
-</div>
 
 <script>
-    // DOM Elements
-    // DOM Elements
+  // DOM Elements
 const video = document.getElementById('video');
 const player = document.getElementById('player');
 const controlsContainer = document.getElementById('controlsContainer');
@@ -1163,7 +1162,6 @@ function togglePiP() {
   }
   showControls();
 }
-
 </script>
 
 </body>
