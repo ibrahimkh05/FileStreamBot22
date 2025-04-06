@@ -3,31 +3,35 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>{{file_name}}</title>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <title>Premium Video Player</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     :root {
-      --primary-color: #e50914;
+      --primary-color: #00a8e1;
+      --primary-hover: #0091c8;
       --secondary-color: #f5f5f5;
-      --bg-dark: #141414;
-      --bg-light: #1f1f1f;
+      --bg-dark: #0f0f0f;
+      --bg-light: #1a1a1a;
       --text-primary: #ffffff;
-      --text-secondary: #d2d2d2;
-      --hover-bg: rgba(255, 255, 255, 0.1);
+      --text-secondary: #b3b3b3;
+      --hover-bg: rgba(255, 255, 255, 0.15);
       --progress-height: 4px;
-      --controls-height: 70px;
+      --controls-height: 75px;
       --transition-speed: 0.2s;
+      --buffer-color: rgba(255, 255, 255, 0.4);
+      --overlay-bg: rgba(0, 0, 0, 0.5);
+      --progress-hover-color: #00c3ff;
     }
-    
+
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
     }
-    
+
     body {
-      font-family: 'Roboto', sans-serif;
+      font-family: 'Inter', sans-serif;
       background: var(--bg-dark);
       display: flex;
       justify-content: center;
@@ -35,105 +39,161 @@
       height: 100vh;
       color: var(--text-primary);
     }
-    
+
+    .container {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
     .player {
       position: relative;
-      width: 90%;
-      max-width: 960px;
-      border-radius: 8px;
+      width: min(90vw, 75vh * 16/9);
+      height: min(50vw * 9/16, 75vh);
+      border-radius: 16px;
       overflow: hidden;
       background: #000;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-      aspect-ratio: 14/9; /* Changed to 14:9 aspect ratio */
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
     }
-    
+
     video {
       width: 100%;
       height: 100%;
       display: block;
-      object-fit: cover;
+      object-fit: contain;
     }
-    
+
     .title-bar {
       position: absolute;
       top: 0;
       left: 0;
       width: 100%;
-      padding: 15px;
-      background: linear-gradient(to bottom, rgba(0,0,0,0.7) 0%, transparent 100%);
+      padding: 24px;
+      background: linear-gradient(to bottom, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.4) 60%, transparent 100%);
       z-index: 10;
-      display: none;
+      transition: opacity var(--transition-speed) ease;
     }
-    
+
+    .title-bar h3 {
+      font-weight: 600;
+      font-size: 20px;
+      margin: 0;
+      letter-spacing: 0.3px;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+    }
+
     .controls-container {
       position: absolute;
       bottom: 0;
       width: 100%;
       z-index: 10;
-      background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 100%);
-      transition: all var(--transition-speed) ease;
+      background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.4) 80%, transparent 100%);
+      transition: all 0.3s ease;
+      padding-top: 40px;
     }
-    
+
     .controls-container.hidden {
       transform: translateY(100%);
       opacity: 0;
     }
-    
+
     .progress-container {
       width: 100%;
       height: var(--progress-height);
       background: rgba(255, 255, 255, 0.2);
       cursor: pointer;
       position: relative;
+      margin-bottom: 8px;
+      backdrop-filter: blur(2px);
     }
-    
+
+    .progress-container:hover {
+      height: 8px;
+      transition: height 0.15s ease;
+    }
+
+    .buffer-bar {
+      position: absolute;
+      height: 100%;
+      background-color: var(--buffer-color);
+      width: 0%;
+      border-radius: 4px;
+    }
+
     .progress {
       height: 100%;
-      background: var(--primary-color);
+      background: linear-gradient(90deg, var(--primary-color), var(--primary-hover));
       width: 0%;
       position: relative;
       transition: width 0.1s linear;
+      border-radius: 4px;
     }
-    
+
     .progress-handle {
       position: absolute;
-      right: -8px;
+      right: -10px;
       top: 50%;
-      transform: translateY(-50%);
-      width: 16px;
-      height: 16px;
-      background: var(--primary-color);
+      transform: translateY(-50%) scale(0);
+      width: 18px;
+      height: 18px;
+      background: #ffffff;
       border-radius: 50%;
       opacity: 0;
-      transition: opacity var(--transition-speed);
-      box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+      transition: all 0.2s ease;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.7);
+      border: 2px solid var(--primary-color);
     }
-    
+
     .progress-container:hover .progress-handle {
       opacity: 1;
+      transform: translateY(-50%) scale(1);
     }
-    
+
+    .hover-time {
+      position: absolute;
+      top: -34px;
+      background: rgba(0, 0, 0, 0.8);
+      color: var(--text-primary);
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 500;
+      transform: translateX(-50%);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s;
+      backdrop-filter: blur(5px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .progress-container:hover .hover-time {
+      opacity: 1;
+    }
+
     .controls {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 10px 15px;
+      padding: 12px 24px 24px;
       height: var(--controls-height);
     }
-    
+
     .btn-group {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 16px;
     }
-    
-    button {
+
+    .control-btn {
       background: transparent;
       border: none;
       color: var(--text-primary);
       font-size: 18px;
-      width: 40px;
-      height: 40px;
+      width: 44px;
+      height: 44px;
       cursor: pointer;
       border-radius: 50%;
       display: flex;
@@ -141,9 +201,10 @@
       align-items: center;
       transition: all var(--transition-speed) ease;
       position: relative;
+      backdrop-filter: blur(2px);
     }
-    
-    button::after {
+
+    .control-btn::after {
       content: '';
       position: absolute;
       top: 0;
@@ -153,63 +214,82 @@
       background: var(--hover-bg);
       border-radius: 50%;
       transform: scale(0);
-      transition: transform var(--transition-speed) ease;
+      transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
       z-index: -1;
     }
-    
-    button:hover::after {
+
+    .control-btn:hover::after {
       transform: scale(1);
     }
-    
-    button:active {
-      transform: scale(0.9);
+
+    .control-btn:active {
+      transform: scale(0.92);
     }
-    
+
     .btn-primary {
       background: var(--primary-color);
-      width: 45px;
-      height: 45px;
+      width: 54px;
+      height: 54px;
+      box-shadow: 0 2px 15px rgba(0, 168, 225, 0.5);
+      font-size: 20px;
     }
-    
+
+    .btn-primary:hover {
+      background: var(--primary-hover);
+    }
+
     .btn-primary:hover::after {
-      background: rgba(229, 9, 20, 0.7);
+      background: rgba(255, 255, 255, 0.1);
     }
-    
+
     .volume-container {
       display: flex;
       align-items: center;
-      gap: 8px;
+      position: relative;
     }
-    
+
+    .volume-slider-container {
+      overflow: hidden;
+      width: 0;
+      transition: width 0.3s ease;
+      margin-left: 0;
+    }
+
+    .volume-container:hover .volume-slider-container {
+      width: 90px;
+      margin-left: 8px;
+    }
+
     .volume-slider {
-      width: 80px;
+      width: 90px;
       height: 4px;
-      background: rgba(255, 255, 255, 0.2);
+      background: rgba(255, 255, 255, 0.3);
       cursor: pointer;
       appearance: none;
-      border-radius: 2px;
-      opacity: 1; /* Always visible now */
-      transform: scaleX(1); /* Always visible now */
-      transform-origin: left;
+      border-radius: 4px;
     }
-    
+
     .volume-slider::-webkit-slider-thumb {
       appearance: none;
-      width: 12px;
-      height: 12px;
-      background: var(--primary-color);
+      width: 14px;
+      height: 14px;
+      background: #ffffff;
       border-radius: 50%;
       cursor: pointer;
+      box-shadow: 0 0 8px rgba(0, 0, 0, 0.5);
+      border: 2px solid var(--primary-color);
     }
-    
+
     .time {
-      font-size: 14px;
-      font-weight: 500;
+      font-size: 15px;
+      font-weight: 600;
       color: var(--text-primary);
-      min-width: 140px;
+      min-width: 150px;
       text-align: center;
+      letter-spacing: 0.3px;
+      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
     }
-    
+
     .overlay-play,
     .rewind-overlay,
     .forward-overlay {
@@ -219,472 +299,416 @@
       color: white;
       font-size: 3rem;
       opacity: 0;
-      transition: opacity var(--transition-speed);
+      transition: opacity var(--transition-speed), transform 0.3s;
       pointer-events: none;
       z-index: 5;
-      background: rgba(0, 0, 0, 0.5);
+      background: var(--overlay-bg);
+      backdrop-filter: blur(8px);
       border-radius: 50%;
-      width: 80px;
-      height: 80px;
+      width: 100px;
+      height: 100px;
       display: flex;
       justify-content: center;
       align-items: center;
+      box-shadow: 0 4px 30px rgba(0, 0, 0, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.1);
     }
-    
+
     .overlay-play {
       left: 50%;
-      transform: translate(-50%, -50%);
+      transform: translate(-50%, -50%) scale(0.95);
     }
-    
+
+    .overlay-play.show {
+      transform: translate(-50%, -50%) scale(1);
+    }
+
     .rewind-overlay {
       left: 15%;
+      transform: translateY(-50%) scale(0.9);
+      border-radius: 20px;
+      width: 120px;
     }
-    
+
+    .rewind-overlay.show {
+      transform: translateY(-50%) scale(1);
+    }
+
     .forward-overlay {
       right: 15%;
+      transform: translateY(-50%) scale(0.9);
+      border-radius: 20px;
+      width: 120px;
     }
-    
+
+    .forward-overlay.show {
+      transform: translateY(-50%) scale(1);
+    }
+
     .show {
       opacity: 1 !important;
     }
-    
+
     .speed-menu {
       position: absolute;
-      bottom: 70px;
-      right: 15px;
-      background: var(--bg-light);
-      border-radius: 4px;
+      bottom: 85px;
+      right: 25px;
+      background: rgba(26, 26, 26, 0.95);
+      border-radius: 12px;
       overflow: hidden;
       display: none;
       flex-direction: column;
-      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
       z-index: 20;
-      min-width: 120px;
+      min-width: 140px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
     }
-    
+
     .speed-menu button {
       width: 100%;
       border-radius: 0;
       font-size: 14px;
-      padding: 10px 15px;
+      padding: 14px 18px;
       text-align: left;
       justify-content: flex-start;
       color: var(--text-secondary);
       height: auto;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-weight: 500;
     }
-    
+
     .speed-menu button:hover {
       color: var(--text-primary);
       background: var(--hover-bg);
     }
-    
+
     .speed-menu button.active {
       color: var(--primary-color);
-      font-weight: 500;
+      font-weight: 600;
+      background: rgba(0, 168, 225, 0.1);
     }
-    
+
+    /* Disabled state for progress bar */
+    .progress-container.disabled {
+      cursor: not-allowed;
+      opacity: 0.5;
+    }
+
+    .progress-container.disabled .progress-handle {
+      display: none;
+    }
+
     @media (max-width: 768px) {
+      .container {
+        padding: 10px;
+      }
+      
       .player {
-        width: 100%;
-        border-radius: 0;
+        width: 95vw;
+        height: calc(95vw * 9/16);
+        border-radius: 12px;
       }
       
       .controls {
-        padding: 8px 10px;
-        height: 60px;
+        padding: 10px 16px 18px;
+        height: 68px;
       }
       
-      button {
-        width: 36px;
-        height: 36px;
+      .control-btn {
+        width: 40px;
+        height: 40px;
         font-size: 16px;
       }
       
       .btn-primary {
-        width: 40px;
-        height: 40px;
+        width: 48px;
+        height: 48px;
       }
       
-      .volume-slider {
-        width: 60px;
+      .volume-container:hover .volume-slider-container {
+        width: 65px;
       }
       
       .time {
-        font-size: 12px;
-        min-width: 110px;
+        font-size: 13px;
+        min-width: 120px;
       }
       
       .overlay-play,
       .rewind-overlay,
       .forward-overlay {
         font-size: 2.5rem;
-        width: 70px;
-        height: 70px;
+        width: 80px;
+        height: 80px;
       }
+      
+      .rewind-overlay,
+      .forward-overlay {
+        width: 100px;
+      }
+      
+      .title-bar h3 {
+        font-size: 18px;
+      }
+      /* Touch areas for mobile control */
+    .player-touch-areas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 4; /* Below control overlays but above video */
+      display: flex;
+    }
+
+    .touch-area {
+      height: 100%;
+      flex: 1;
+    }
+
+    /* Hide touch areas when controls are visible */
+    .controls-container:not(.hidden) ~ .player-touch-areas {
+      pointer-events: none;
+    }
+
+    /* Special mobile styles */
+    @media (max-width: 768px) {
+      .player {
+        width: 100vw;
+        height: calc(100vw * 9/16);
+        border-radius: 0;
+      }
+      
+      /* Fullscreen in landscape adjustments */
+      .player:fullscreen {
+        width: 100vw;
+        height: 100vh;
+      }
+      
+      /* Make controls bigger on touch devices */
+      .btn-group {
+        gap: 8px;
+      }
+      
+      .control-btn {
+        width: 38px;
+        height: 38px;
+      }
+      
+      /* Improve volume slider for touch */
+      .volume-slider {
+        height: 8px;
+      }
+      
+      .volume-slider::-webkit-slider-thumb {
+        width: 18px;
+        height: 18px;
+      }
+      
+      /* Bigger progress bar for touch */
+      .progress-container {
+        height: 6px;
+      }
+      
+      .progress-container:hover {
+        height: 12px;
+      }
+    }
+
+    /* Landscape-specific adjustments */
+    @media (max-width: 915px) and (orientation: landscape) {
+      .player {
+        width: 100vw;
+        height: 100vh;
+        border-radius: 0;
+      }
+      
+      /* Make controls more compact in landscape mode */
+      .controls {
+        padding: 6px 16px 12px;
+      }
+      
+      /* Hide less important controls in landscape */
+      .volume-slider-container {
+        display: none;
+      }
+    }
+      
     }
   </style>
 </head>
 <body>
 
-<div class="player" id="player">
-  <video id="video" src="https://faststreaming.cybersyncc.workers.dev/?src={{file_url}}" preload="metadata"></video>
+<div class="container">
+  <div class="player" id="player">
+    <video id="video" src="" preload="metadata"></video>
 
-  <!-- Title Bar (hidden) -->
-  <div class="title-bar" id="titleBar"></div>
-
-  <!-- Controls Container -->
-  <div class="controls-container" id="controlsContainer">
-    <!-- Progress Bar -->
-    <div class="progress-container" id="progressBar">
-      <div class="progress" id="progress">
-        <div class="progress-handle"></div>
-      </div>
-    </div>
-
-    <!-- Controls -->
-    <div class="controls" id="controls">
-      <div class="btn-group">
-        <button onclick="rewind()" id="rewindBtn" title="Rewind 10s"><i class="fas fa-undo-alt"></i></button>
-        <button onclick="togglePlay()" id="playBtn" class="btn-primary" title="Play/Pause"><i class="fas fa-play"></i></button>
-        <button onclick="forward()" id="forwardBtn" title="Forward 10s"><i class="fas fa-redo-alt"></i></button>
-      </div>
-      <div class="time" id="time">00:00:00 / 00:00:00</div>
-      <div class="btn-group">
-        <div class="volume-container">
-          <button onclick="toggleMute()" id="muteBtn" title="Mute"><i class="fas fa-volume-up"></i></button>
-          <input type="range" min="0" max="1" step="0.05" value="1" class="volume-slider" oninput="setVolume(this.value)">
+    <div class="controls-container" id="controlsContainer">
+      <div class="progress-container" id="progressBar">
+        <div class="buffer-bar" id="bufferBar"></div>
+        <div class="progress" id="progress">
+          <div class="progress-handle"></div>
         </div>
-        <button onclick="toggleSpeedMenu()" title="Playback speed"><i class="fas fa-tachometer-alt"></i></button>
-        <button onclick="togglePiP()" title="Picture-in-Picture"><i class="fas fa-clone"></i></button>
-        <button onclick="toggleFullScreen()" title="Fullscreen"><i class="fas fa-expand"></i></button>
+        <div class="hover-time" id="hoverTime">00:00:00</div>
+      </div>
+
+      <div class="controls" id="controls">
+        <div class="btn-group">
+          <button id="rewindBtn" class="control-btn" title="Rewind 10s"><i class="fas fa-undo-alt"></i></button>
+          <button id="playBtn" class="btn-primary control-btn" title="Play/Pause"><i class="fas fa-play"></i></button>
+          <button id="forwardBtn" class="control-btn" title="Forward 10s"><i class="fas fa-redo-alt"></i></button>
+        </div>
+        <div class="time" id="time">00:00:00 / 00:00:00</div>
+        <div class="btn-group">
+          <div class="volume-container">
+            <button id="muteBtn" class="control-btn" title="Mute"><i class="fas fa-volume-up"></i></button>
+            <div class="volume-slider-container">
+              <input type="range" min="0" max="1" step="0.05" value="1" class="volume-slider" id="volumeSlider">
+            </div>
+          </div>
+          <button id="speedBtn" class="control-btn" title="Playback speed"><i class="fas fa-tachometer-alt"></i></button>
+          <button id="pipBtn" class="control-btn" title="Picture-in-Picture"><i class="fas fa-clone"></i></button>
+          <button id="fullscreenBtn" class="control-btn" title="Fullscreen"><i class="fas fa-expand"></i></button>
+        </div>
       </div>
     </div>
-  </div>
 
-  <!-- Overlay Elements -->
-  <div class="overlay-play" id="overlayPlay"><i class="fas fa-play"></i></div>
-  <div class="rewind-overlay" id="rewindOverlay"><i class="fas fa-backward"></i> 10s</div>
-  <div class="forward-overlay" id="forwardOverlay">10s <i class="fas fa-forward"></i></div>
+    <div class="overlay-play" id="overlayPlay"><i class="fas fa-play"></i></div>
+    <div class="rewind-overlay" id="rewindOverlay"><i class="fas fa-backward"></i> 10s</div>
+    <div class="forward-overlay" id="forwardOverlay">10s <i class="fas fa-forward"></i></div>
 
-  <!-- Speed Options -->
-  <div class="speed-menu" id="speedMenu">
-    <button onclick="setSpeed(0.5)">0.5x</button>
-    <button onclick="setSpeed(1)" class="active">1x (Normal)</button>
-    <button onclick="setSpeed(1.5)">1.5x</button>
-    <button onclick="setSpeed(2)">2x</button>
+    <div class="speed-menu" id="speedMenu">
+      <button data-speed="0.5">0.5x</button>
+      <button data-speed="0.75">0.75x</button>
+      <button data-speed="1" class="active">1x (Normal)</button>
+      <button data-speed="1.25">1.25x</button>
+      <button data-speed="1.5">1.5x</button>
+      <button data-speed="2">2x</button>
+    </div>
   </div>
 </div>
 
 <script>
-  const video = document.getElementById('video');
-  const player = document.getElementById('player');
-  const controlsContainer = document.getElementById('controlsContainer');
-  const progressBar = document.getElementById('progressBar');
-  const progress = document.getElementById('progress');
-  const playBtn = document.getElementById('playBtn');
-  const muteBtn = document.getElementById('muteBtn');
-  const timeDisplay = document.getElementById('time');
-  const overlayPlay = document.getElementById('overlayPlay');
-  const rewindOverlay = document.getElementById('rewindOverlay');
-  const forwardOverlay = document.getElementById('forwardOverlay');
-  const titleBar = document.getElementById('titleBar');
-  const speedMenu = document.getElementById('speedMenu');
-  const speedButtons = speedMenu.querySelectorAll('button');
+    // DOM Elements
+    // DOM Elements
+const video = document.getElementById('video');
+const player = document.getElementById('player');
+const controlsContainer = document.getElementById('controlsContainer');
+const progressBar = document.getElementById('progressBar');
+const progress = document.getElementById('progress');
+const bufferBar = document.getElementById('bufferBar');
+const playBtn = document.getElementById('playBtn');
+const muteBtn = document.getElementById('muteBtn');
+const timeDisplay = document.getElementById('time');
+const overlayPlay = document.getElementById('overlayPlay');
+const rewindOverlay = document.getElementById('rewindOverlay');
+const forwardOverlay = document.getElementById('forwardOverlay');
+const titleBar = document.getElementById('titleBar');
+const speedMenu = document.getElementById('speedMenu');
+const speedButtons = speedMenu.querySelectorAll('button');
+const rewindBtn = document.getElementById('rewindBtn');
+const forwardBtn = document.getElementById('forwardBtn');
+const volumeSlider = document.getElementById('volumeSlider');
+const speedBtn = document.getElementById('speedBtn');
+const pipBtn = document.getElementById('pipBtn');
+const fullscreenBtn = document.getElementById('fullscreenBtn');
+const hoverTime = document.getElementById('hoverTime');
 
-  let hideControlsTimeout;
-  let isFullScreen = false;
-  let isDraggingProgress = false;
-  let mouseInControls = false;
-  let lastForwardTime = 0;
-  let lastRewindTime = 0;
-  let forwardCount = 0;
-  let rewindCount = 0;
+// State variables
+let hideControlsTimeout;
+let isFullScreen = false;
+let isDraggingProgress = false;
+let mouseInControls = false;
+let lastForwardTime = 0;
+let lastRewindTime = 0;
+let forwardCount = 0;
+let rewindCount = 0;
+let isVideoLoaded = false;
+let lastActivity = Date.now();
+let controlsVisible = true;
+let mouseIsMoving = false;
 
-  // Initialize player
-  document.addEventListener('DOMContentLoaded', function() {
-    titleBar.style.display = 'none';
-    updateTime();
-    showControls();
+// Initialize player
+document.addEventListener('DOMContentLoaded', function() {
+  updateTime();
+  showControls();
+  setupEventListeners();
+  setupProgressBar();
+  setupHoverEffects();
+  
+  // Initially style progress bar as disabled
+  progressBar.classList.add('disabled');
+});
+
+function setupEventListeners() {
+  // Button event listeners
+  playBtn.addEventListener('click', togglePlay);
+  rewindBtn.addEventListener('click', rewind);
+  forwardBtn.addEventListener('click', forward);
+  muteBtn.addEventListener('click', toggleMute);
+  volumeSlider.addEventListener('input', () => setVolume(volumeSlider.value));
+  speedBtn.addEventListener('click', toggleSpeedMenu);
+  pipBtn.addEventListener('click', togglePiP);
+  fullscreenBtn.addEventListener('click', toggleFullScreen);
+  
+  // Speed menu buttons
+  speedButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      setSpeed(parseFloat(btn.dataset.speed));
+    });
   });
-
-  // Show controls
-  function showControls() {
-    controlsContainer.classList.remove('hidden');
-    clearTimeout(hideControlsTimeout);
-    
-    if (isFullScreen) {
-      hideControlsTimeout = setTimeout(() => {
-        if (!mouseInControls && !isDraggingProgress) {
-          hideControls();
-        }
-      }, 3000);
-    }
-  }
-
-  // Hide controls (fullscreen only)
-  function hideControls() {
-    if (isFullScreen) {
-      controlsContainer.classList.add('hidden');
-    }
-  }
-
-  // Mouse movement handler
-  function handleMouseMove() {
-    showControls();
-  }
-
-  // Fullscreen listeners
-  function setupFullScreenListeners() {
-    document.addEventListener('fullscreenchange', () => {
-      isFullScreen = !!document.fullscreenElement;
-      if (isFullScreen) {
-        document.addEventListener('mousemove', handleMouseMove);
-        setTimeout(hideControls, 3000);
-      } else {
-        document.removeEventListener('mousemove', handleMouseMove);
-        showControls();
-      }
-    });
-
-    document.addEventListener('webkitfullscreenchange', () => {
-      isFullScreen = !!document.webkitFullscreenElement;
-      if (isFullScreen) {
-        document.addEventListener('mousemove', handleMouseMove);
-        setTimeout(hideControls, 3000);
-      } else {
-        document.removeEventListener('mousemove', handleMouseMove);
-        showControls();
-      }
-    });
-  }
-
-  setupFullScreenListeners();
-
-  // Track mouse in controls area
-  controlsContainer.addEventListener('mouseenter', () => {
-    mouseInControls = true;
-    showControls();
-  });
-
-  controlsContainer.addEventListener('mouseleave', () => {
-    mouseInControls = false;
-    if (isFullScreen) {
-      setTimeout(hideControls, 1000);
-    }
-  });
-
-  // Play/Pause function
-  function togglePlay() {
-    if (video.paused) {
-      video.play();
-      playBtn.innerHTML = '<i class="fas fa-pause"></i>';
-      overlayPlay.classList.remove('show');
-    } else {
-      video.pause();
-      playBtn.innerHTML = '<i class="fas fa-play"></i>';
-      overlayPlay.classList.add('show');
-    }
-    showControls();
-  }
-
-  // Rewind function with 10s increments
-  function rewind() {
-    const now = Date.now();
-    const jumpAmount = 10 * (rewindCount + 1);
-    
-    if (now - lastRewindTime > 1000) {
-      rewindCount = 0;
-    }
-    
-    video.currentTime = Math.max(0, video.currentTime - jumpAmount);
-    rewindOverlay.innerHTML = `<i class="fas fa-backward"></i> ${jumpAmount}s`;
-    rewindOverlay.classList.add('show');
-    
-    setTimeout(() => {
-      rewindOverlay.classList.remove('show');
-    }, 700);
-    
-    lastRewindTime = now;
-    rewindCount++;
-    setTimeout(() => {
-      if (Date.now() - lastRewindTime > 1000) {
-        rewindCount = 0;
-      }
-    }, 1000);
-    
-    showControls();
-  }
-
-  // Forward function with 10s increments
-  function forward() {
-    const now = Date.now();
-    const jumpAmount = 10 * (forwardCount + 1);
-    
-    if (now - lastForwardTime > 1000) {
-      forwardCount = 0;
-    }
-    
-    video.currentTime = Math.min(video.duration, video.currentTime + jumpAmount);
-    forwardOverlay.innerHTML = `${jumpAmount}s <i class="fas fa-forward"></i>`;
-    forwardOverlay.classList.add('show');
-    
-    setTimeout(() => {
-      forwardOverlay.classList.remove('show');
-    }, 700);
-    
-    lastForwardTime = now;
-    forwardCount++;
-    setTimeout(() => {
-      if (Date.now() - lastForwardTime > 1000) {
-        forwardCount = 0;
-      }
-    }, 1000);
-    
-    showControls();
-  }
-
-  // Mute toggle function
-  function toggleMute() {
-    video.muted = !video.muted;
-    muteBtn.innerHTML = video.muted ? '<i class="fas fa-volume-mute"></i>' : '<i class="fas fa-volume-up"></i>';
-    showControls();
-  }
-
-  // Set volume
-  function setVolume(val) {
-    video.volume = val;
-    video.muted = false;
-    muteBtn.innerHTML = '<i class="fas fa-volume-up"></i>';
-    showControls();
-  }
-
-  // Update progress bar
-  function updateProgress() {
-    if (!isDraggingProgress && video.duration) {
-      const percent = (video.currentTime / video.duration) * 100;
-      progress.style.width = percent + '%';
-    }
-    updateTime();
-  }
-
-  // Seek function with YouTube-style dragging
-  function setupProgressBar() {
-    progressBar.addEventListener('mousedown', (e) => {
-      isDraggingProgress = true;
-      seek(e);
-      showControls();
-    });
-
-    document.addEventListener('mousemove', (e) => {
-      if (isDraggingProgress) {
-        seek(e);
-        showControls();
-      }
-    });
-
-    document.addEventListener('mouseup', () => {
-      if (isDraggingProgress) {
-        isDraggingProgress = false;
-        showControls();
-      }
-    });
-
-    progressBar.addEventListener('click', seek);
-  }
-
-  function seek(e) {
-    const rect = progressBar.getBoundingClientRect();
-    let percent = (e.clientX - rect.left) / rect.width;
-    percent = Math.max(0, Math.min(1, percent));
-    progress.style.width = (percent * 100) + '%';
-    
-    if (video.duration) {
-      video.currentTime = percent * video.duration;
-    }
-  }
-
-  // Format time as HH:MM:SS
-  function formatTime(seconds) {
-    if (isNaN(seconds)) return '00:00:00';
-    
-    const h = Math.floor(seconds / 3600);
-    const m = Math.floor((seconds % 3600) / 60);
-    const s = Math.floor(seconds % 60);
-    
-    return [
-      h.toString().padStart(2, '0'),
-      m.toString().padStart(2, '0'),
-      s.toString().padStart(2, '0')
-    ].join(':');
-  }
-
-  // Update time display
-  function updateTime() {
-    const current = video.currentTime || 0;
-    const duration = video.duration || 0;
-    timeDisplay.innerText = `${formatTime(current)} / ${formatTime(duration)}`;
-  }
-
-  // Speed menu toggle
-  function toggleSpeedMenu() {
-    speedMenu.style.display = speedMenu.style.display === 'flex' ? 'none' : 'flex';
-    showControls();
-  }
-
-  // Set speed
-  function setSpeed(speed) {
-    video.playbackRate = speed;
-    speedMenu.style.display = 'none';
-    
-    // Update active button in speed menu
-    speedButtons.forEach(btn => {
-      btn.classList.remove('active');
-      if (parseFloat(btn.textContent) === speed) {
-        btn.classList.add('active');
-      }
-    });
-    
-    showControls();
-  }
-
-  // Fullscreen toggle
-  function toggleFullScreen() {
-    if (isFullScreen) {
-      if (document.exitFullscreen) document.exitFullscreen();
-      else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
-    } else {
-      if (player.requestFullscreen) player.requestFullscreen();
-      else if (player.webkitRequestFullscreen) player.webkitRequestFullscreen();
-    }
-  }
-
-  // Picture in Picture toggle
-  function togglePiP() {
-    if (video !== document.pictureInPictureElement) {
-      video.requestPictureInPicture().catch(err => {
-        console.error("PiP failed:", err);
-      });
-    } else {
-      document.exitPictureInPicture();
-    }
-    showControls();
-  }
-
-  // Event listeners
+  
+  // Video event listeners
   video.addEventListener('play', () => {
     playBtn.innerHTML = '<i class="fas fa-pause"></i>';
     overlayPlay.classList.remove('show');
   });
-
+  
   video.addEventListener('pause', () => {
     playBtn.innerHTML = '<i class="fas fa-play"></i>';
     overlayPlay.classList.add('show');
   });
-
+  
   video.addEventListener('timeupdate', updateProgress);
   video.addEventListener('click', togglePlay);
-  player.addEventListener('mousemove', showControls);
-
+  
+  // Improve mouse movement tracking
+  player.addEventListener('mousemove', handleMouseMove);
+  player.addEventListener('mouseleave', () => {
+    // Only hide controls when in fullscreen and video is playing
+    if (isFullScreen && !video.paused) {
+      hideControlsTimeout = setTimeout(hideControls, 3000);
+    }
+  });
+  
+  // Buffer progress tracking
+  video.addEventListener('progress', updateBufferProgress);
+  
+  // Video loading events
+  video.addEventListener('loadedmetadata', () => {
+    isVideoLoaded = true;
+    progressBar.classList.remove('disabled');
+    updateTime();
+    if (titleBar) {
+      titleBar.style.display = 'block';
+    }
+  });
+  
+  video.addEventListener('canplay', () => {
+    isVideoLoaded = true;
+    progressBar.classList.remove('disabled');
+  });
+  
+  // Error event in case video fails to load
+  video.addEventListener('error', () => {
+    isVideoLoaded = false;
+    progressBar.classList.add('disabled');
+  });
+  
   // Keyboard controls
   document.addEventListener('keydown', (e) => {
     if (e.code === 'Space') {
@@ -694,16 +718,452 @@
       rewind();
     } else if (e.code === 'ArrowRight') {
       forward();
+    } else if (e.code === 'ArrowUp') {
+      e.preventDefault();
+      setVolume(Math.min(1, video.volume + 0.1));
+      volumeSlider.value = video.volume;
+    } else if (e.code === 'ArrowDown') {
+      e.preventDefault();
+      setVolume(Math.max(0, video.volume - 0.1));
+      volumeSlider.value = video.volume;
+    } else if (e.code === 'KeyM') {
+      toggleMute();
+    } else if (e.code === 'KeyF') {
+      toggleFullScreen();
+    }
+  });
+  
+  // Fullscreen listeners
+  document.addEventListener('fullscreenchange', handleFullscreenChange);
+  document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+  document.addEventListener('mozfullscreenchange', handleFullscreenChange);
+  document.addEventListener('MSFullscreenChange', handleFullscreenChange);
+  
+  // Controls area tracking
+  controlsContainer.addEventListener('mouseenter', () => {
+    mouseInControls = true;
+    showControls();
+    clearTimeout(hideControlsTimeout);
+  });
+  
+  controlsContainer.addEventListener('mouseleave', () => {
+    mouseInControls = false;
+    // Only set timeout to hide controls if in fullscreen mode and video is playing
+    if (isFullScreen && !video.paused) {
+      hideControlsTimeout = setTimeout(hideControls, 3000);
+    }
+  });
+  
+  // Hide speed menu when clicking outside
+  document.addEventListener('click', (e) => {
+    if (!speedBtn.contains(e.target) && !speedMenu.contains(e.target)) {
+      speedMenu.style.display = 'none';
+    }
+  });
+}
+
+function updateBufferProgress() {
+  if (video.buffered.length > 0) {
+    const bufferedEnd = video.buffered.end(video.buffered.length - 1);
+    const duration = video.duration;
+    if (duration > 0) {
+      const bufferedPercent = (bufferedEnd / duration) * 100;
+      bufferBar.style.width = `${bufferedPercent}%`;
+    }
+  }
+}
+
+function handleMouseMove() {
+  lastActivity = Date.now();
+  showControls();
+  
+  if (!mouseIsMoving) {
+    mouseIsMoving = true;
+    setTimeout(() => { mouseIsMoving = false; }, 100);
+  }
+  
+  // Only set timeout to hide controls if in fullscreen mode and video is playing
+  if (isFullScreen && !video.paused) {
+    clearTimeout(hideControlsTimeout);
+    hideControlsTimeout = setTimeout(checkActivity, 3000);
+  }
+}
+
+function checkActivity() {
+  const idleTime = Date.now() - lastActivity;
+  if (idleTime > 2800 && !mouseInControls && !isDraggingProgress && !video.paused && isFullScreen) {
+    hideControls();
+  } else if (isFullScreen && !video.paused) {
+    hideControlsTimeout = setTimeout(checkActivity, 1000);
+  }
+}
+
+function handleFullscreenChange() {
+  isFullScreen = !!document.fullscreenElement || 
+                 !!document.webkitFullscreenElement || 
+                 !!document.mozFullScreenElement ||
+                 !!document.msFullscreenElement;
+  
+  if (isFullScreen) {
+    fullscreenBtn.innerHTML = '<i class="fas fa-compress"></i>';
+    // Only start hiding controls countdown if video is playing
+    if (!video.paused) {
+      hideControlsTimeout = setTimeout(checkActivity, 3000);
+    }
+  } else {
+    fullscreenBtn.innerHTML = '<i class="fas fa-expand"></i>';
+    showControls(); // Make sure controls are always visible when exiting fullscreen
+    clearTimeout(hideControlsTimeout); 
+  }
+}
+
+// Show controls
+function showControls() {
+  if (!controlsVisible) {
+    controlsContainer.classList.remove('hidden');
+    if (titleBar) {
+      titleBar.style.opacity = '1';
+    }
+    controlsVisible = true;
+  }
+  clearTimeout(hideControlsTimeout);
+}
+
+// Hide controls (fullscreen only)
+function hideControls() {
+  // Only hide controls if in fullscreen mode, video is playing, and no interaction is happening
+  if (isFullScreen && !video.paused && !mouseInControls && !isDraggingProgress && !mouseIsMoving) {
+    controlsContainer.classList.add('hidden');
+    if (titleBar) {
+      titleBar.style.opacity = '0';
+    }
+    controlsVisible = false;
+  }
+}
+
+// Play/Pause function
+function togglePlay() {
+  if (video.paused) {
+    video.play().catch(err => {
+      console.error("Play failed:", err);
+    });
+  } else {
+    video.pause();
+  }
+  showControls();
+  
+  // Reset hiding controls timer if in fullscreen and playing
+  if (isFullScreen && !video.paused) {
+    clearTimeout(hideControlsTimeout);
+    hideControlsTimeout = setTimeout(checkActivity, 3000);
+  }
+}
+
+// Rewind function with 10s increments
+function rewind() {
+  const now = Date.now();
+  const jumpAmount = 10 * (rewindCount + 1);
+  
+  if (now - lastRewindTime > 1000) {
+    rewindCount = 0;
+  }
+  
+  video.currentTime = Math.max(0, video.currentTime - jumpAmount);
+  rewindOverlay.innerHTML = `<i class="fas fa-backward"></i> ${jumpAmount}s`;
+  rewindOverlay.classList.add('show');
+  
+  setTimeout(() => {
+    rewindOverlay.classList.remove('show');
+  }, 700);
+  
+  lastRewindTime = now;
+  rewindCount++;
+  setTimeout(() => {
+    if (Date.now() - lastRewindTime > 1000) {
+      rewindCount = 0;
+    }
+  }, 1000);
+  
+  showControls();
+}
+
+// Forward function with 10s increments
+function forward() {
+  const now = Date.now();
+  const jumpAmount = 10 * (forwardCount + 1);
+  
+  if (now - lastForwardTime > 1000) {
+    forwardCount = 0;
+  }
+  
+  video.currentTime = Math.min(video.duration, video.currentTime + jumpAmount);
+  forwardOverlay.innerHTML = `${jumpAmount}s <i class="fas fa-forward"></i>`;
+  forwardOverlay.classList.add('show');
+  
+  setTimeout(() => {
+    forwardOverlay.classList.remove('show');
+  }, 700);
+  
+  lastForwardTime = now;
+  forwardCount++;
+  setTimeout(() => {
+    if (Date.now() - lastForwardTime > 1000) {
+      forwardCount = 0;
+    }
+  }, 1000);
+  
+  showControls();
+}
+
+// Mute toggle function
+function toggleMute() {
+  video.muted = !video.muted;
+  muteBtn.innerHTML = video.muted ? '<i class="fas fa-volume-mute"></i>' : '<i class="fas fa-volume-up"></i>';
+  showControls();
+}
+
+// Set volume
+function setVolume(val) {
+  video.volume = val;
+  volumeSlider.value = val;
+  video.muted = val === 0;
+  
+  // Update volume icon based on level
+  if (val === 0 || video.muted) {
+    muteBtn.innerHTML = '<i class="fas fa-volume-mute"></i>';
+  } else if (val < 0.5) {
+    muteBtn.innerHTML = '<i class="fas fa-volume-down"></i>';
+  } else {
+    muteBtn.innerHTML = '<i class="fas fa-volume-up"></i>';
+  }
+  
+  showControls();
+}
+
+// Update progress bar
+function updateProgress() {
+  if (!isDraggingProgress && video.duration) {
+    const percent = (video.currentTime / video.duration) * 100;
+    progress.style.width = percent + '%';
+  }
+  updateTime();
+}
+
+// Seek function with dragging
+function setupProgressBar() {
+  progressBar.addEventListener('mousedown', (e) => {
+    // Only allow dragging if video is loaded
+    if (isVideoLoaded) {
+      isDraggingProgress = true;
+      seek(e);
+      showControls();
     }
   });
 
-  // Initialize progress bar functionality
-  setupProgressBar();
+  document.addEventListener('mousemove', (e) => {
+    if (isDraggingProgress && isVideoLoaded) {
+      seek(e);
+      showControls();
+    }
+  });
 
-  // Hide controls after 3 seconds (fullscreen only)
-  if (isFullScreen) {
-    setTimeout(hideControls, 3000);
+  document.addEventListener('mouseup', () => {
+    if (isDraggingProgress) {
+      isDraggingProgress = false;
+      showControls();
+      
+      // Reset hiding controls timer after dragging if in fullscreen and playing
+      if (isFullScreen && !video.paused) {
+        clearTimeout(hideControlsTimeout);
+        hideControlsTimeout = setTimeout(checkActivity, 3000);
+      }
+    }
+  });
+
+  progressBar.addEventListener('click', (e) => {
+    // Only allow seeking if video is loaded
+    if (isVideoLoaded) {
+      seek(e);
+    }
+  });
+}
+
+function setupHoverEffects() {
+  progressBar.addEventListener('mousemove', (e) => {
+    if (isVideoLoaded && video.duration) {
+      const rect = progressBar.getBoundingClientRect();
+      const percent = (e.clientX - rect.left) / rect.width;
+      const time = percent * video.duration;
+      
+      hoverTime.textContent = formatTime(time);
+      hoverTime.style.left = e.clientX - rect.left + 'px';
+    }
+  });
+  
+  progressBar.addEventListener('mouseenter', () => {
+    if (isVideoLoaded) {
+      hoverTime.style.opacity = '1';
+    }
+  });
+  
+  progressBar.addEventListener('mouseleave', () => {
+    hoverTime.style.opacity = '0';
+  });
+}
+
+function seek(e) {
+  if (!isVideoLoaded) return; // Safety check
+  
+  const rect = progressBar.getBoundingClientRect();
+  let percent = (e.clientX - rect.left) / rect.width;
+  percent = Math.max(0, Math.min(1, percent));
+  progress.style.width = (percent * 100) + '%';
+  
+  if (video.duration) {
+    video.currentTime = percent * video.duration;
   }
+}
+
+// Format time as HH:MM:SS
+function formatTime(seconds) {
+  if (isNaN(seconds)) return '00:00:00';
+  
+  const h = Math.floor(seconds / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  const s = Math.floor(seconds % 60);
+  
+  return [
+    h.toString().padStart(2, '0'),
+    m.toString().padStart(2, '0'),
+    s.toString().padStart(2, '0')
+  ].join(':');
+}
+
+// Update time display
+function updateTime() {
+  const current = video.currentTime || 0;
+  const duration = video.duration || 0;
+  timeDisplay.innerText = `${formatTime(current)} / ${formatTime(duration)}`;
+}
+
+// Speed menu toggle
+function toggleSpeedMenu() {
+  speedMenu.style.display = speedMenu.style.display === 'flex' ? 'none' : 'flex';
+  showControls();
+}
+
+// Set speed
+function setSpeed(speed) {
+  video.playbackRate = speed;
+  speedMenu.style.display = 'none';
+  
+  // Update active button in speed menu
+  speedButtons.forEach(btn => {
+    btn.classList.remove('active');
+    if (parseFloat(btn.dataset.speed) === speed) {
+      btn.classList.add('active');
+    }
+  });
+  
+  showControls();
+}
+
+// Fullscreen toggle
+function toggleFullScreen() {
+  if (isFullScreen) {
+    if (document.exitFullscreen) document.exitFullscreen();
+    else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+    else if (document.mozCancelFullScreen) document.mozCancelFullScreen();
+    else if (document.msExitFullscreen) document.msExitFullscreen();
+  } else {
+    if (player.requestFullscreen) player.requestFullscreen();
+    else if (player.webkitRequestFullscreen) player.webkitRequestFullscreen();
+    else if (player.mozRequestFullScreen) player.mozRequestFullScreen();
+    else if (player.msRequestFullscreen) player.msRequestFullscreen();
+  }
+}
+// Add touch controls for mobile
+const playerArea = document.createElement('div');
+playerArea.className = 'player-touch-areas';
+player.appendChild(playerArea);
+
+// Create touch areas (left, center, right)
+const leftArea = document.createElement('div');
+leftArea.className = 'touch-area left-area';
+leftArea.addEventListener('click', rewind);
+
+const centerArea = document.createElement('div');
+centerArea.className = 'touch-area center-area';
+centerArea.addEventListener('click', togglePlay);
+
+const rightArea = document.createElement('div');
+rightArea.className = 'touch-area right-area';
+rightArea.addEventListener('click', forward);
+
+playerArea.appendChild(leftArea);
+playerArea.appendChild(centerArea);
+playerArea.appendChild(rightArea);
+
+// Handle orientation change for mobile fullscreen
+window.addEventListener('orientationchange', handleOrientationChange);
+// Handle orientation changes for mobile devices
+function handleOrientationChange() {
+  if (isFullScreen) {
+    // Force landscape orientation when in fullscreen on mobile
+    if (window.orientation === 0 || window.orientation === 180) {
+      // Phone is in portrait mode while fullscreen, try to force landscape
+      if ('orientation' in screen && 'lock' in screen.orientation) {
+        screen.orientation.lock('landscape').catch(e => {
+          // Handle cases where orientation locking isn't supported
+          console.log('Orientation lock not supported');
+        });
+      }
+    }
+  } else if (document.fullscreenElement === null) {
+    // When exiting fullscreen, unlock the orientation
+    if ('orientation' in screen && 'unlock' in screen.orientation) {
+      screen.orientation.unlock();
+    }
+  }
+}
+// Fullscreen toggle with mobile support
+function toggleFullScreen() {
+  if (isFullScreen) {
+    if (document.exitFullscreen) document.exitFullscreen();
+    else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+    else if (document.mozCancelFullScreen) document.mozCancelFullScreen();
+    else if (document.msExitFullscreen) document.msExitFullscreen();
+  } else {
+    if (player.requestFullscreen) player.requestFullscreen();
+    else if (player.webkitRequestFullscreen) player.webkitRequestFullscreen();
+    else if (player.mozRequestFullScreen) player.mozRequestFullScreen();
+    else if (player.msRequestFullscreen) player.msRequestFullscreen();
+    
+    // Try to force landscape on mobile
+    if (window.innerWidth < 768 && window.matchMedia("(orientation: portrait)").matches) {
+      if ('orientation' in screen && 'lock' in screen.orientation) {
+        screen.orientation.lock('landscape').catch(e => {
+          // Orientation lock not supported or denied by user
+          console.log('Could not lock orientation: ', e);
+        });
+      }
+    }
+  }
+}
+// Picture in Picture toggle
+function togglePiP() {
+  if (video !== document.pictureInPictureElement) {
+    video.requestPictureInPicture().catch(err => {
+      console.error("PiP failed:", err);
+    });
+  } else {
+    document.exitPictureInPicture().catch(err => {
+      console.error("Exit PiP failed:", err);
+    });
+  }
+  showControls();
+}
+
 </script>
 
 </body>
