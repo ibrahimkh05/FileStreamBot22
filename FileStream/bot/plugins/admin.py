@@ -211,4 +211,41 @@ async def broadcast_(c, m):
                 caption=f"**Broadcast completed in** `{completed_in}`\n\n"
                         f"**Total users:** {total_users}\n"
                         f"**Total done:** {done}\n"
-                        f"**Success:**
+                        f"**Success:** {success}\n"
+                        f"**Failed:** {failed}",
+                quote=True
+            )
+        
+        # Clean up log file
+        try:
+            os.remove(log_file_path)
+        except Exception as e:
+            print(f"Error removing log file: {e}")
+            
+    except Exception as e:
+        await m.reply_text(f"**Broadcast failed:** `{str(e)}`")
+        print(f"Broadcast error: {e}")
+
+
+@FileStream.on_message(filters.command("del") & filters.private & filters.user(Telegram.OWNER_ID))
+async def delete_file(c: Client, m: Message):
+    if len(m.text.split()) < 2:
+        await m.reply_text("**Usage:** `/del file_id`", parse_mode=ParseMode.MARKDOWN, quote=True)
+        return
+    
+    file_id = m.text.split()[1]
+    try:
+        file_info = await db.get_file(file_id)
+    except FIleNotFound:
+        await m.reply_text(
+            text="**ꜰɪʟᴇ ᴀʟʀᴇᴀᴅʏ ᴅᴇʟᴇᴛᴇᴅ**",
+            quote=True
+        )
+        return
+    
+    await db.delete_one_file(file_info['_id'])
+    await db.count_links(file_info['user_id'], "-")
+    await m.reply_text(
+        text="**Fɪʟᴇ Dᴇʟᴇᴛᴇᴅ Sᴜᴄᴄᴇssғᴜʟʟʏ !**",
+        quote=True
+    )
