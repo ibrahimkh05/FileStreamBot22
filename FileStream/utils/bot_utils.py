@@ -85,8 +85,15 @@ async def gen_link(_id):
     file_size = humanbytes(file_info['file_size'])
     mime_type = file_info['mime_type']
 
-    page_link = f"{Server.URL}watch/{_id}"
-    stream_link = f"{Server.URL}dl/{_id}"
+    # Use Cloudflare Worker URL for streaming
+    if Server.CLOUDFLARE_WORKER_URL:
+        stream_link = f"{Server.CLOUDFLARE_WORKER_URL}/dl/{file_info['file_id']}"
+        page_link = f"{Server.CLOUDFLARE_WORKER_URL}/dl/{file_info['file_id']}"
+    else:
+        # Fallback to original server URLs
+        page_link = f"{Server.URL}watch/{_id}"
+        stream_link = f"{Server.URL}dl/{_id}"
+    
     file_link = f"https://t.me/{FileStream.username}?start=file_{_id}"
 
     if "video" in mime_type:
@@ -117,8 +124,15 @@ async def gen_linkx(m:Message , _id, name: list):
     mime_type = file_info['mime_type']
     file_size = humanbytes(file_info['file_size'])
 
-    page_link = f"{Server.URL}watch/{_id}"
-    stream_link = f"{Server.URL}dl/{_id}"
+    # Use Cloudflare Worker URL for streaming
+    if Server.CLOUDFLARE_WORKER_URL:
+        stream_link = f"{Server.CLOUDFLARE_WORKER_URL}/dl/{file_info['file_id']}"
+        page_link = f"{Server.CLOUDFLARE_WORKER_URL}/dl/{file_info['file_id']}"
+    else:
+        # Fallback to original server URLs
+        page_link = f"{Server.URL}watch/{_id}"
+        stream_link = f"{Server.URL}dl/{_id}"
+    
     file_link = f"https://t.me/{FileStream.username}?start=file_{_id}"
 
     if "video" in mime_type:
