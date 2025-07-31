@@ -134,8 +134,14 @@ async def gen_file_menu(_id, file_list_no, update: CallbackQuery):
     else:
         file_type = "Unknown"
 
-    page_link = f"{Server.URL}watch/{myfile_info['_id']}"
-    stream_link = f"{Server.URL}dl/{myfile_info['_id']}"
+    # Use Cloudflare Worker URL if available, otherwise fallback to server URL
+    if Server.CLOUDFLARE_WORKER_URL:
+        stream_link = f"{Server.CLOUDFLARE_WORKER_URL}/dl/{myfile_info['file_id']}"
+        page_link = f"{Server.CLOUDFLARE_WORKER_URL}/dl/{myfile_info['file_id']}"
+    else:
+        page_link = f"{Server.URL}watch/{myfile_info['_id']}"
+        stream_link = f"{Server.URL}dl/{myfile_info['_id']}"
+    
     if "video" in file_type.lower():
         MYFILES_BUTTONS = InlineKeyboardMarkup(
             [
@@ -195,4 +201,3 @@ async def delete_user_filex(_id, update:CallbackQuery):
             caption= "**Fɪʟᴇ Dᴇʟᴇᴛᴇᴅ Sᴜᴄᴄᴇssғᴜʟʟʏ !**\n\n",
             reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("ᴄʟᴏsᴇ", callback_data=f"close")]])
         )
-
